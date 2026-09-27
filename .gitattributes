@@ -1,0 +1,4 @@
+* text=auto
+*.fx text eol=lf
+*.fxh text eol=lf
+*.md text eol=lf

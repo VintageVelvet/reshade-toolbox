@@ -1,0 +1,7 @@
+ReShade.log
+ReShade.ini
+ReShadeCache/
+*.log
+*.zip
+.DS_Store
+Thumbs.db
