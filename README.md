@@ -2,6 +2,14 @@
 
 VintageVelvet 的个人 ReShade 着色器与预设维护仓库。
 
+## 许可与署名
+
+本仓库新增的代码和文档采用 [MIT License](LICENSE)，Copyright (c) 2026 VintageVelvet。第三方代码及其修改版须同时保留相应的上游署名和条款；根目录 LICENSE 不替代第三方许可，也不宣称第三方内容归本仓库原创。
+
+`LandscapeComposition.fx` 整合了标注 MIT 的 VerticalPreviewer 和采用 BSD-3-Clause 的 Daodan Composition。分发该文件时需保留文件内的全部许可与署名；这是不同来源条款同时适用，不是任选 MIT 或 BSD。文件内已附完整许可正文，便于单独下载、分享 `.fx` 时一并保留。
+
+来源版本、固定链接、本地汉化来源的核查边界见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。标准 `ReShade.fxh` 和编译验证工具未随本仓库分发。未来新增第三方着色器、纹理或预设时，应分别核对许可，不能直接套用本仓库的 MIT。
+
 ## 横屏构图：LandscapeComposition
 
 `Shaders/LandscapeComposition.fx` 从 AuroraShade 着色器包中的 `GS/VerticalPreviewer.fx` 0.3 提取构图功能，使用 ReShade FX。保留原来的构图几何和中文选项，直接在原画面上绘制辅助线。默认三等分、白色、29.4% 不透明度。
