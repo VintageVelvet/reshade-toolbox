@@ -138,7 +138,8 @@ namespace AlbumFrame
 uniform int CanvasRatio <
     ui_type = "combo";
     ui_label = "画板比例";
-    ui_items = "1:1\0 4:3\0 3:4\0 16:9\0 9:16\0自定义\0";
+    ui_tooltip = "经典拍立得自动使用方形成像区与底部宽边；内部大小和位置改由该布局确定，边框颜色仍可调整。";
+    ui_items = "1:1\0 4:3\0 3:4\0 16:9\0 9:16\0自定义\0经典拍立得（88:107）\0";
     ui_category = "1. 封面画板";
 > = 0;
 
@@ -152,6 +153,7 @@ uniform float2 CustomCanvasRatio <
 
 uniform bool EnableInnerBorder <
     ui_label = "启用内部留边";
+    ui_tooltip = "普通画板的留边开关；经典拍立得自带留边，不受此开关影响。";
     ui_category = "2. 内部留边";
 > = false;
 
@@ -232,12 +234,13 @@ uniform int CompositionArea <
     ui_type = "combo";
     ui_label = "构图参考区域";
     ui_items = "内部窗口\0整个画板\0";
-    ui_tooltip = "内部窗口：跟随实际露出游戏画面的区域；未开启留边时等同画板。整个画板：包含内部留边。";
+    ui_tooltip = "内部窗口：跟随实际露出游戏画面的区域；普通画板未开启留边时等同画板。整个画板：包含内部留边。";
     ui_category = "3. 构图辅助";
 > = 0;
 
 float GetCanvasRatio()
 {
+    if (CanvasRatio == 6) return 88.0 / 107.0;
     if (CanvasRatio == 1) return 4.0 / 3.0;
     if (CanvasRatio == 2) return 3.0 / 4.0;
     if (CanvasRatio == 3) return 16.0 / 9.0;
@@ -273,7 +276,18 @@ void GetRectangles(out float2 canvasMin, out float2 canvasSize,
     canvasMin = floor((BUFFER_SCREEN_SIZE - canvasSize) * 0.5);
     windowMin = canvasMin;
     windowSize = canvasSize;
-    if (EnableInnerBorder)
+    if (CanvasRatio == 6)
+    {
+        // Polaroid i-Type nominal format 88 x 107 mm, image 79 x 79 mm.
+        // Top margin 4.5 mm is a layout approximation, not a published spec.
+        float scale = min(canvasSize.x / 88.0, canvasSize.y / 107.0);
+        float side = max(floor(79.0 * scale + 0.5), 1.0);
+        windowSize = min(float2(side, side), canvasSize);
+        float2 offset = float2(floor((canvasSize.x - windowSize.x) * 0.5),
+                               floor(4.5 * scale + 0.5));
+        windowMin = canvasMin + min(offset, canvasSize - windowSize);
+    }
+    else if (EnableInnerBorder)
     {
         if (WindowRatio >= 6)
             windowSize = canvasSize * clamp(FreeWindowSize, 1.0, 100.0) * 0.01;
@@ -293,7 +307,7 @@ float4 DrawFrame(float4 position : SV_Position, float2 uv : TEXCOORD) : SV_Targe
     float2 pixel = position.xy;
     if (any(pixel < canvasMin) || any(pixel >= canvasMin + canvasSize))
         return float4(0.0, 0.0, 0.0, 1.0);
-    if (EnableInnerBorder && (any(pixel < windowMin) || any(pixel >= windowMin + windowSize)))
+    if ((EnableInnerBorder || CanvasRatio == 6) && (any(pixel < windowMin) || any(pixel >= windowMin + windowSize)))
         return float4(BorderColor, 1.0);
     return float4(tex2D(ReShade::BackBuffer, uv).rgb, 1.0);
 }
