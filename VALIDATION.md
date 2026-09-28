@@ -66,3 +66,18 @@ foreach ($entry in @('E__PostProcessVS', 'E__LandscapeComposition__PS_Compositio
 上述结果证明 ReShade FX 前端与 DX11 对应的 SM5 后端接受当前源码；GLSL 检查仅覆盖代码生成，未交给实际 OpenGL 驱动编译。未在用户游戏内加载、截图或观察运行时图像，因此线条观感、游戏效果排序、截图流程仍需实际使用确认。超宽分辨率通过编译不代表已经添加独立安全框、裁切或宽屏专属构图设计。
 
 `enabled_in_screenshot = false` 是 [ReShade 5.2 官方加入的技术注解](https://www.reshade.me/releases/8046-5-2)，并非 AuroraShade 私有扩展。它控制 ReShade 自身截图流程，不能使游戏截图、系统截图或录屏自动隐藏构图线。
+
+## AlbumFrame 0.1 — 2026-09-28
+
+- 使用上文同一 ReShade Testing Initiative 普通 reshadefx_cli 编译器及相同 ReShade.fxh。
+- DXBC Shader Model 5.0，显式指定 __RENDERER__=0xb000，保留运行时 uniform。
+- 2560 × 1440 与 3840 × 2160 均分别编译 F__PostProcessVS 和 F__AlbumFrame__DrawFrame；四次退出码均为 0，无错误或警告。
+- 每个分辨率生成顶点字节码 18,656 字节、像素字节码 40,828 字节。
+- 编译输入 SHA-256：249961333900E52223D395238E3B3982940DF26792BD55E43A637B5460571380。
+- 发布文件只在该输入前附上仓库完整 MIT 许可注释，已逐字核对余下源码一致。
+- 几何检查覆盖横屏、竖屏、超宽屏、奇数尺寸和极端自定义比例，2,205 个嵌套矩形组合均未越界。
+- 未进行游戏内运行、画面或截图验证；不包含自动裁切功能。
+
+复现时使用上文 DXBC 命令，将输入替换为 AlbumFrame.fx、像素入口替换为 F__AlbumFrame__DrawFrame，分辨率使用 2560 × 1440 和 3840 × 2160。
+
+发布文件 SHA-256：1C6BE0BEF8E3718CDA91A9A3320FD44A375027ED145AC08AD8FF3828C109BC4B

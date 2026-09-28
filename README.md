@@ -2,6 +2,17 @@
 
 VintageVelvet 的个人 ReShade 着色器与预设维护仓库。
 
+
+## 着色器目录
+
+| 着色器 | 用途 | 使用说明 |
+|---|---|---|
+| [LandscapeComposition.fx](Shaders/LandscapeComposition.fx) | 横屏构图辅助线 | 见下方横屏构图说明 |
+| [AlbumFrame.fx](Shaders/AlbumFrame.fx) | 专辑封面比例取景、外部黑色遮罩与内部留边 | [专辑取景框](docs/AlbumFrame.md) |
+
+新增着色器统一放在 `Shaders/`，预设放在 `Presets/`，单独的功能说明放在 `docs/`。
+
+AlbumFrame 新增代码采用仓库 MIT 许可，文件内附完整许可正文。该效果默认显示最大化的居中正方形画板，保持框内原始画面采样；截图仍为游戏分辨率，裁切坐标见使用说明。现有 LandscapeComposition 按整个渲染画面绘制构图线，尚未适配 AlbumFrame 的内部窗口；组合启用时建议 AlbumFrame 排在其后以遮住框外线条。
 ## 许可与署名
 
 本仓库新增的代码和文档采用 [MIT License](LICENSE)，Copyright (c) 2026 VintageVelvet。第三方代码及其修改版须同时保留相应的上游署名和条款；根目录 LICENSE 不替代第三方许可，也不宣称第三方内容归本仓库原创。
