@@ -138,7 +138,7 @@ namespace AlbumFrame
 uniform int CanvasRatio <
     ui_type = "combo";
     ui_label = "画板比例";
-    ui_tooltip = "经典拍立得自动使用方形成像区与底部宽边；内部大小和位置改由该布局确定，边框颜色仍可调整。";
+    ui_tooltip = "只设置外框比例。拍立得留白需在内部留边中单独启用并选择布局。";
     ui_items = "1:1\0 4:3\0 3:4\0 16:9\0 9:16\0自定义\0经典拍立得（88:107）\0";
     ui_category = "1. 封面画板";
 > = 0;
@@ -151,30 +151,45 @@ uniform float2 CustomCanvasRatio <
     ui_category = "1. 封面画板";
 > = float2(1.0, 1.0);
 
+uniform float3 OutsideColor <
+    ui_type = "color";
+    ui_label = "画板外颜色";
+    ui_tooltip = "画板之外的遮罩颜色，不影响内部留边。内部使用黑边时可选灰色，方便辨认裁切边界。";
+    ui_category = "1. 封面画板";
+> = float3(0.0, 0.0, 0.0);
+
 uniform bool EnableInnerBorder <
     ui_label = "启用内部留边";
-    ui_tooltip = "普通画板的留边开关；经典拍立得自带留边，不受此开关影响。";
+    ui_tooltip = "控制所有内部布局。关闭后游戏画面铺满画板。";
     ui_category = "2. 内部留边";
 > = false;
 
+uniform int InnerLayout <
+    ui_type = "combo";
+    ui_label = "内部布局";
+    ui_items = "普通调整\0拍立得留白\0";
+    ui_tooltip = "仅启用内部留边后生效。拍立得使用方形照片和宽底边，适配任意画板比例，大小与位置仍可调整。";
+    ui_category = "2. 内部留边";
+> = 0;
+
 uniform int WindowRatio <
     ui_type = "combo";
-    ui_label = "画面形状";
+    ui_label = "普通布局：画面形状";
     ui_items = "跟随画板\0 1:1\0 16:9\0 5:4\0 2:3\0 5:7\0自定义\0";
     ui_category = "2. 内部留边";
 > = 0;
 
 uniform float WindowScale <
     ui_type = "slider";
-    ui_label = "预设：画面大小 (%)";
+    ui_label = "画面大小（预设 / 拍立得，%）";
     ui_min = 1.0; ui_max = 100.0; ui_step = 0.1;
-    ui_tooltip = "适用于跟随画板和固定比例。100% 为最大，减小会等比增加留边。选择自定义时此项不生效。";
+    ui_tooltip = "普通固定比例：100% 最大；拍立得：100% 为标准布局，减小围绕默认中心缩放。普通自定义模式不使用此项。";
     ui_category = "2. 内部留边";
 > = 100.0;
 
 uniform float2 FreeWindowSize <
     ui_type = "slider";
-    ui_label = "自定义：宽度 / 高度 (%)";
+    ui_label = "普通自定义：宽度 / 高度 (%)";
     ui_min = 1.0; ui_max = 100.0; ui_step = 0.1;
     ui_tooltip = "仅选择自定义时生效。第一个数值为画面占画板宽度的百分比，第二个为占画板高度的百分比；100% 贴边。切换模式保留各自设置，不会自动换算。";
     ui_category = "2. 内部留边";
@@ -184,7 +199,7 @@ uniform float2 WindowPosition <
     ui_type = "slider";
     ui_label = "窗口位置（水平 / 垂直）";
     ui_min = -1.0; ui_max = 1.0; ui_step = 0.01;
-    ui_tooltip = "0 居中；-1 贴左 / 上边，1 贴右 / 下边。窗口始终位于画板内。";
+    ui_tooltip = "普通布局 0 居中，拍立得 0 为预设位置；-1 贴左 / 上边，1 贴右 / 下边。";
     ui_category = "2. 内部留边";
 > = float2(0.0, 0.0);
 
@@ -234,7 +249,7 @@ uniform int CompositionArea <
     ui_type = "combo";
     ui_label = "构图参考区域";
     ui_items = "内部窗口\0整个画板\0";
-    ui_tooltip = "内部窗口：跟随实际露出游戏画面的区域；普通画板未开启留边时等同画板。整个画板：包含内部留边。";
+    ui_tooltip = "内部窗口：跟随实际露出游戏画面的区域；未开启留边时等同画板。整个画板：包含内部留边。";
     ui_category = "3. 构图辅助";
 > = 0;
 
@@ -276,16 +291,22 @@ void GetRectangles(out float2 canvasMin, out float2 canvasSize,
     canvasMin = floor((BUFFER_SCREEN_SIZE - canvasSize) * 0.5);
     windowMin = canvasMin;
     windowSize = canvasSize;
-    if (CanvasRatio == 6)
+    if (EnableInnerBorder && InnerLayout == 1)
     {
-        // Polaroid i-Type nominal format 88 x 107 mm, image 79 x 79 mm.
-        // Top margin 4.5 mm is a layout approximation, not a published spec.
+        // 88:107 nominal film with a 79-square image; top 4.5 is approximate.
+        // Fit this layout to any canvas without changing the canvas itself.
         float scale = min(canvasSize.x / 88.0, canvasSize.y / 107.0);
-        float side = max(floor(79.0 * scale + 0.5), 1.0);
-        windowSize = min(float2(side, side), canvasSize);
-        float2 offset = float2(floor((canvasSize.x - windowSize.x) * 0.5),
-                               floor(4.5 * scale + 0.5));
-        windowMin = canvasMin + min(offset, canvasSize - windowSize);
+        float baseSide = min(floor(79.0 * scale + 0.5), min(canvasSize.x, canvasSize.y));
+        float side = max(floor(baseSide * clamp(WindowScale, 1.0, 100.0) * 0.01 + 0.5), 1.0);
+        windowSize = float2(side, side);
+        float2 baseOffset = float2((canvasSize.x - baseSide) * 0.5, 4.5 * scale)
+                          + (baseSide - side) * 0.5;
+        float2 room = canvasSize - windowSize;
+        baseOffset = clamp(baseOffset, 0.0, room);
+        float2 move = clamp(WindowPosition, -1.0, 1.0);
+        float2 offset = baseOffset + min(move, 0.0) * baseOffset
+                                  + max(move, 0.0) * (room - baseOffset);
+        windowMin = canvasMin + floor(offset + 0.5);
     }
     else if (EnableInnerBorder)
     {
@@ -306,8 +327,8 @@ float4 DrawFrame(float4 position : SV_Position, float2 uv : TEXCOORD) : SV_Targe
     GetRectangles(canvasMin, canvasSize, windowMin, windowSize);
     float2 pixel = position.xy;
     if (any(pixel < canvasMin) || any(pixel >= canvasMin + canvasSize))
-        return float4(0.0, 0.0, 0.0, 1.0);
-    if ((EnableInnerBorder || CanvasRatio == 6) && (any(pixel < windowMin) || any(pixel >= windowMin + windowSize)))
+        return float4(OutsideColor, 1.0);
+    if (EnableInnerBorder && (any(pixel < windowMin) || any(pixel >= windowMin + windowSize)))
         return float4(BorderColor, 1.0);
     return float4(tex2D(ReShade::BackBuffer, uv).rgb, 1.0);
 }
