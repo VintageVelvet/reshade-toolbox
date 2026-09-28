@@ -129,7 +129,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Album Frame v0.2 - FFXIV Toolbox
+// Album Frame v0.3-local - FFXIV Toolbox
 // Screen-space composition mask. Original scene coordinates are preserved.
 #include "ReShade.fxh"
 
@@ -157,31 +157,24 @@ uniform bool EnableInnerBorder <
 
 uniform int WindowRatio <
     ui_type = "combo";
-    ui_label = "内部窗口比例";
-    ui_items = "跟随画板\0 1:1\0 16:9\0 5:4\0 2:3\0 5:7\0自定义\0自由宽高\0";
+    ui_label = "画面形状";
+    ui_items = "跟随画板\0 1:1\0 16:9\0 5:4\0 2:3\0 5:7\0自定义\0";
     ui_category = "2. 内部留边";
 > = 0;
 
-uniform float2 CustomWindowRatio <
-    ui_type = "drag";
-    ui_label = "自定义窗口宽 : 高";
-    ui_min = 0.1; ui_max = 32.0; ui_step = 0.1;
-    ui_category = "2. 内部留边";
-> = float2(16.0, 9.0);
-
 uniform float WindowScale <
     ui_type = "slider";
-    ui_label = "窗口大小 (%)";
+    ui_label = "预设：画面大小 (%)";
     ui_min = 1.0; ui_max = 100.0; ui_step = 0.1;
-    ui_tooltip = "按选定比例放到最大后等比内缩。自由宽高模式使用下方两个数值。";
+    ui_tooltip = "适用于跟随画板和固定比例。100% 为最大，减小会等比增加留边。选择自定义时此项不生效。";
     ui_category = "2. 内部留边";
 > = 100.0;
 
 uniform float2 FreeWindowSize <
     ui_type = "slider";
-    ui_label = "自由宽高 (%)";
+    ui_label = "自定义：宽度 / 高度 (%)";
     ui_min = 1.0; ui_max = 100.0; ui_step = 0.1;
-    ui_tooltip = "仅自由宽高模式生效，分别相对于画板宽和高。";
+    ui_tooltip = "仅选择自定义时生效。第一个数值为画面占画板宽度的百分比，第二个为占画板高度的百分比；100% 贴边。切换模式保留各自设置，不会自动换算。";
     ui_category = "2. 内部留边";
 > = float2(100.0, 100.0);
 
@@ -261,8 +254,6 @@ float GetWindowRatio(float canvasRatio)
     if (WindowRatio == 3) return 5.0 / 4.0;
     if (WindowRatio == 4) return 2.0 / 3.0;
     if (WindowRatio == 5) return 5.0 / 7.0;
-    if (WindowRatio == 6)
-        return max(CustomWindowRatio.x, 0.1) / max(CustomWindowRatio.y, 0.1);
     return canvasRatio;
 }
 
@@ -284,7 +275,7 @@ void GetRectangles(out float2 canvasMin, out float2 canvasSize,
     windowSize = canvasSize;
     if (EnableInnerBorder)
     {
-        if (WindowRatio == 7)
+        if (WindowRatio >= 6)
             windowSize = canvasSize * clamp(FreeWindowSize, 1.0, 100.0) * 0.01;
         else
             windowSize = FitRectangle(canvasSize, GetWindowRatio(ratio))

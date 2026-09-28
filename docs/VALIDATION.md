@@ -89,3 +89,11 @@ foreach ($entry in @('E__PostProcessVS', 'E__LandscapeComposition__PS_Compositio
 - 12 种绘图 helper 剔除新增 localPixelSize 传参差异后，与 LandscapeComposition 一致；移动/缩小窗口的局部坐标、三分和中心位置、像素线宽及区域裁切检查通过。
 - 编译输入 SHA-256：177748ECD19F8B205CE941ECA57C3839EF70845788B25C10C5370B5FEECA7111。发布前只清理行尾空白；最终源码 SHA-256：789FA5FD5F53CC39B18B10C70A4EDC7119DDC791A73DF8CE0152E6DD683C4000。
 - 遮罩与构图共享矩形计算，截图排除标记仅应用于 AlbumFrame_Guides。未在游戏内验证效果顺序、运行时画面或截图排除行为。
+
+## AlbumFrame 自定义布局试用版 — 2026-09-29
+
+- DXBC SM5：2560 × 1440、3840 × 2160 各编译 VS、DrawFrame、DrawGuides，六个入口均成功，未收到错误或警告。
+- 源码 SHA-256：A2B2DE4FBA2D6B310CB741BDB0C540E3F7DEF08513A2B74FF02EEBA7C61410DB。
+- 固定比例索引 0–5 与原计算保持一致；新自定义索引 6 和旧自由宽高索引 7 均走百分比宽高计算，后续裁切与构图共用矩形保持不变。
+- 已核对标准 ReShade 面板的 hidden、ui_text 等为静态注解，因此采用带生效范围的标签，没有动态隐藏、实时比例读数或切换模式自动赋值。
+- 未进行游戏内面板或运行时视觉验证。
