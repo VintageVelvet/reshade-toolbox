@@ -79,7 +79,7 @@
     The MIT permission and disclaimer below also accompany the upstream
     MIT-designated portions; their original attribution is retained above.
     Redistribution of this combined file must retain both MIT and BSD notices.
-    Source details and localization provenance: THIRD_PARTY_NOTICES.md.
+    Source details and localization provenance: docs/THIRD_PARTY_NOTICES.md.
 
 MIT License
 
