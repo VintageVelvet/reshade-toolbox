@@ -134,7 +134,7 @@ uniform float4 GridColor <
     ui_type = "color";
     ui_label = "构图线颜色与透明度（RGBA）";
     ui_tooltip = "RGB 设置颜色；A 设置不透明度，0 为完全透明，1 为不透明。";
-> = float4(1.0, 1.0, 1.0, 0.294);
+> = float4(0.0, 0.0, 0.0, 1.0);
 
 uniform float GridHalfWidth <
     ui_type = "slider";
@@ -142,7 +142,7 @@ uniform float GridHalfWidth <
     ui_tooltip = "沿用参考文件的半线宽定义：水平/垂直线总宽约为此值的两倍。\n"
                  "斜线保留参考文件的额外加宽；设置为 0 时所有线完全隐藏。";
     ui_min = 0.0; ui_max = 5.0; ui_step = 0.01;
-> = 2.0;
+> = 1.0;
 
 struct sctpoint {
     float3 color;
