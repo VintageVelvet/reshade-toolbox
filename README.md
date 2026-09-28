@@ -7,7 +7,7 @@ VintageVelvet 的个人 ReShade 着色器与预设维护仓库。
 | 着色器 | 用途 | 使用说明 |
 |---|---|---|
 | [LandscapeComposition.fx](Shaders/LandscapeComposition.fx) | 横屏构图辅助线 | [横屏构图](docs/LandscapeComposition.md) |
-| [AlbumFrame.fx](Shaders/AlbumFrame.fx) | 专辑封面取景、外部遮罩与内部留边 | [专辑取景框](docs/AlbumFrame.md) |
+| [AlbumFrame.fx](Shaders/AlbumFrame.fx) | 专辑封面取景、内部留边与区域构图线 | [专辑取景框](docs/AlbumFrame.md) |
 
 ## 安装
 
@@ -15,7 +15,7 @@ VintageVelvet 的个人 ReShade 着色器与预设维护仓库。
 2. 确保搜索路径中存在标准 `ReShade.fxh`，然后在游戏内重新加载效果。
 3. 根据对应使用说明启用效果并调整参数，构图辅助和边框通常放在效果顺序末尾。
 
-LandscapeComposition 的构图线以完整渲染画面为基准，尚未适配 AlbumFrame 的内部窗口。组合启用时将 AlbumFrame 排在其后，以遮住画板外部的构图线。
+LandscapeComposition 适合全屏构图。封面画板或内部照片窗口的构图，请使用 AlbumFrame 自带的 AlbumFrame_Guides，并排在 AlbumFrame 遮罩之后。
 
 ## 文档与目录
 
@@ -27,6 +27,6 @@ LandscapeComposition 的构图线以完整渲染画面为基准，尚未适配 A
 
 本仓库新增代码和文档采用 [MIT License](LICENSE)，Copyright (c) 2026 VintageVelvet。第三方部分继续适用原有许可；根目录 LICENSE 不替代第三方条款。
 
-LandscapeComposition 整合了标注 MIT 的 VerticalPreviewer 和采用 BSD-3-Clause 的 Daodan Composition，分发时须保留文件内全部许可与署名。AlbumFrame 采用 MIT，文件内同样附有完整许可正文。
+LandscapeComposition 整合了标注 MIT 的 VerticalPreviewer 和采用 BSD-3-Clause 的 Daodan Composition，分发时须保留文件内全部许可与署名。AlbumFrame 的构图辅助复用上述构图代码，相关部分同样保留上游条款；新增的遮罩和区域适配代码采用 MIT。两个文件均附完整许可正文。
 
 详细来源与条款见[第三方来源与许可说明](docs/THIRD_PARTY_NOTICES.md)。标准 ReShade.fxh 和编译工具未随仓库分发。

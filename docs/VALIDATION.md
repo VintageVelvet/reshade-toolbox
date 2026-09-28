@@ -81,3 +81,11 @@ foreach ($entry in @('E__PostProcessVS', 'E__LandscapeComposition__PS_Compositio
 复现时使用上文 DXBC 命令，将输入替换为 AlbumFrame.fx、像素入口替换为 F__AlbumFrame__DrawFrame，分辨率使用 2560 × 1440 和 3840 × 2160。
 
 发布文件 SHA-256：1C6BE0BEF8E3718CDA91A9A3320FD44A375027ED145AC08AD8FF3828C109BC4B
+
+## AlbumFrame 构图辅助 — 2026-09-29
+
+- 使用前述普通 reshadefx_cli，DXBC SM5，2560 × 1440 与 3840 × 2160 各编译 F__PostProcessVS、F__AlbumFrame__DrawFrame、F__AlbumFrame__DrawGuides，六次均成功且无诊断。
+- 各分辨率生成 VS 18,656 字节、遮罩 PS 40,760 字节、构图 PS 287,512 字节。
+- 12 种绘图 helper 剔除新增 localPixelSize 传参差异后，与 LandscapeComposition 一致；移动/缩小窗口的局部坐标、三分和中心位置、像素线宽及区域裁切检查通过。
+- 编译输入 SHA-256：177748ECD19F8B205CE941ECA57C3839EF70845788B25C10C5370B5FEECA7111。发布前只清理行尾空白；最终源码 SHA-256：789FA5FD5F53CC39B18B10C70A4EDC7119DDC791A73DF8CE0152E6DD683C4000。
+- 遮罩与构图共享矩形计算，截图排除标记仅应用于 AlbumFrame_Guides。未在游戏内验证效果顺序、运行时画面或截图排除行为。

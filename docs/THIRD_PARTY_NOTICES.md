@@ -82,3 +82,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## AlbumFrame.fx 构图辅助
+
+2026-09-29 从本仓库 LandscapeComposition.fx 复用构图模式与绘制辅助函数，来源与署名沿用上文。将全屏坐标改为画板或内部窗口局部坐标，并以所选区域尺寸换算像素线宽。保留原几何和斜线加宽规则。文件包含原有 MIT、BSD-3-Clause 署名与完整条款；新增遮罩与区域适配部分采用仓库 MIT。
