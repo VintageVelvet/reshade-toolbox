@@ -1,12 +1,12 @@
 # DR DLSS 手动模块
 
-维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。当前候选版 `0.1.2.0` 面向 DR `2.2.2.0` / Dalamud API 15。
+维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。当前候选版 `0.1.3.0` 面向 DR `2.2.2.0` / Dalamud API 15。
 
 这里的“本地模块”指 DR 的模块加载类别：模块通过 DR 的本地模块管理单独加载，尚未收录进 DR 官方模块包，不随 DR 版本一起发布。本模块的源码和 DLL 在本仓库独立维护与交付。
 
 ## 下载 DLL
 
-[直接下载 DR.DlssModule.dll](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.2.0/DR.DlssModule.dll) · [版本发布页与安装说明](https://github.com/VintageVelvet/reshade-toolbox/releases/tag/dr-dlss-v0.1.2.0) · [SHA256 校验文件](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.2.0/SHA256SUMS.txt)
+[直接下载 DR.DlssModule.dll](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.3.0/DR.DlssModule.dll) · [版本发布页与安装说明](https://github.com/VintageVelvet/reshade-toolbox/releases/tag/dr-dlss-v0.1.3.0) · [SHA256 校验文件](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.3.0/SHA256SUMS.txt)
 
 当前版本标记为预发布版，游戏验收进度见 VALIDATION.md。发布页提供可直接使用的 DLL，无需自行编译。
 
@@ -14,8 +14,8 @@
 
 - 提供游戏默认、K、L、M 四个模型选项和六个默认挡位。
 - **写入配置**：备份并保存 OptiScaler.ini，供下次启动读取。
-- **刷新生效**：执行窗口刷新，不写入模型或挡位。
-- **写入并刷新生效**：成功保存配置后执行窗口刷新。
+- **刷新生效**：通过桥接应用已保存的模型和挡位，收到回执后执行窗口刷新，不改写 INI。
+- **写入并刷新生效**：成功保存配置后请求桥接更新，再执行窗口刷新。
 - 高级刷新默认参数：窗口模式 1、无边框模式 2、等待 800 毫秒、临时窗口比例 0.95、调整窗口尺寸和 SwapChain 请求开启。
 - 每秒读取磁盘配置，显示配置模型、倍率、覆盖开关、游戏输出分辨率及估算的 DLSS 输入分辨率。
 
@@ -53,7 +53,7 @@
 
 “输出分辨率”和“DLSS”文件版本有各自的数据来源，单独显示这两项不能作为 INI 读取成功的依据。“配置已保存”表示上一次写入完成；配置读取成功也不代表当前游戏已经应用该配置。
 
-游戏输出尺寸在框架更新线程读取 `Device.Instance()->SwapChain->Width/Height`。配置对应的输入尺寸按输出尺寸除以配置倍率并取整；仅在配置选择 DLSS 且比例覆盖开启时显示。主界面的“当前配置”只显示倍率、渲染分辨率和输出分辨率，不显示计算方式。实现上它是配置估算，不是 DLSS Evaluate 输入纹理的实际测量，也不能证明当前游戏进程已重新读取 INI。
+游戏输出尺寸在框架更新线程读取 `Device.Instance()->SwapChain->Width/Height`。“配置渲染分辨率”按输出尺寸除以配置倍率并取整；仅在配置选择 DLSS 且比例覆盖开启时显示。它表示配置目标，不是 DLSS Evaluate 输入纹理的实际测量，也不能证明当前游戏进程已应用该倍率。
 
 界面显示配置目录中 nvngx_dlss.dll 的文件版本，模块初始化和重新读取时更新；该文件版本不证明驱动覆盖后的实际模型。
 
@@ -63,8 +63,8 @@
 2. 从发布页下载 `DR.DlssModule.dll`；自行构建时，默认产物为模块源码目录下的 `out/DR.DlssModule.dll`。
 3. 在 DR 本地模块管理中添加该 DLL 的完整路径并启用。
 4. 打开“DLSS档位调节”或运行 `/pdr dlss`，展开“配置文件”，点击“自动定位”，检查读取结果；自定义位置按下文手动填写。
-5. 确认“当前配置”成功读取后，选择模型和挡位，使用“写入并刷新生效”。状态分别显示文件保存结果和窗口刷新结果。
-6. 下次启动游戏后检查配置及实际画面。游戏内即时生效和重启后生效需要实际验证。
+5. 确认“当前配置”成功读取后，选择模型和挡位，使用“写入并刷新生效”。K/L/M 的热切换需要支持下述协议的 OptiScaler 桥接版。状态分别显示文件保存、桥接请求和窗口刷新结果。
+6. 桥接接受请求后检查实际画面；桥接不可用或结果未确认时，配置仍保留在 INI，但不能据此认定热切换成功。游戏默认当前仅支持配置保存后重启应用。
 
 需要回退模块版本时，在 DR 中停用当前版本，再添加对应版本的 DLL。每次写入的 INI 备份放在配置文件旁边，名称为 `OptiScaler.ini.drbackup-*`；需要回退配置时，在游戏关闭后恢复对应备份。
 
@@ -101,14 +101,22 @@
 - `/pdr dlss preset default` 或 `preset 0`：恢复游戏模型选择、写入并刷新。
 - `/pdr dlss preset K|L|M` 或 `preset 11|12|13`：选择模型、写入并刷新。
 - `/pdr dlss apply`：写入配置。
-- `/pdr dlss refresh`：只刷新画面。
+- `/pdr dlss refresh`：读取已保存配置，请求运行时更新并刷新窗口。
 - `/pdr optidlss`：命令别名。
 
-## 窗口刷新
+## 热切换与窗口刷新
+
+“写入配置”只保存 INI。“刷新生效”读取当前文件中的模型和挡位，经 `OptiScalerDlssBridge` 命名管道请求运行时更新；“写入并刷新生效”先保存，再执行同一流程。连接、读写有统一超时，可在模块停用时取消；连接后核对服务端属于当前游戏进程，避免控制其他实例。
+
+桥接版收到 `set ratio <倍率> preset <模型> save 0` 后，更新 OptiScaler 内存中的配置并设置 DLSS 后端重建标记。模块自行保留原字节备份和更新 INI，不让桥接重新序列化配置文件。“桥接请求已接受”仅确认运行时设置与重建请求已提交，不是对下一帧实际渲染结果的测量。收到正确回执后，模块才执行窗口刷新。
+
+已核对的桥接协议来自 `0.7.7-pre9 (20260525_062754)` 的自定义构建；官方 OptiScaler 不保证提供该命名管道。协议只支持开启模型覆盖，无法关闭覆盖以交还游戏选择，因此“游戏默认”保存为 `RenderPresetOverride=false`，不发送旧桥接的 preset 0 请求，提示重启应用。K/L/M 配合六个挡位可请求热切换，具体结果需要游戏实测。
+
+旧桥接服务端发出回执后立即断开，可能丢弃尚未读取的回复。模块先挂起异步读取再发送请求；只读 ping 可有界重试，set 不重试。set 发送后断开或超时会显示“结果未确认”，因为服务端可能已经修改运行时配置。完全修复服务端回执和新增关闭覆盖能力，需要对应桥接版的完整 OptiScaler 工程。
 
 窗口刷新临时切换模式和窗口尺寸，尝试触发画面重建；本版最后恢复实际原窗口模式、位置和最大化状态。所有游戏配置及窗口操作在框架更新线程执行，取消或失败时也尝试恢复。窗口最小化、无法读取原状态或参数无效时不开始刷新。
 
-窗口刷新请求画面重建；配置持久保存和下次启动读取是主要验收条件，当前进程即时重读 INI 仍需游戏验证。
+窗口刷新本身不会更新 OptiScaler 内存中的倍率和模型。此前只写 INI 再刷新窗口的流程缺少桥接调用，不能保证热切换；[OptiScaler 的 FF14 说明](https://github.com/optiscaler/OptiScaler/wiki/Final-Fantasy-XIV-Dawntrail)也指出比例变更可能需要重新启用 DLSS 或重启游戏。
 
 ## 构建与验证
 
@@ -118,6 +126,7 @@
 ./Build.ps1
 ./tests/Test-Ini.ps1
 ./tests/Test-Snapshot.ps1
+./tests/Test-Bridge.ps1
 ```
 
 Build.ps1 使用 PowerShell 7 自带的 Roslyn 编译器；宿主需基于 .NET 10。默认从当前用户的 XIVLauncherCN 安装中找到最高版本 DR、最近的正式 Hooks 目录和 .NET 10 运行时。也可以传入 `-LauncherRoot`、`-PluginDirectory`、`-HookDirectory` 和 `-OutputDirectory`。源码、依赖哈希及输出哈希记录在 `out/build-info.json`。构建只读取依赖元数据，不执行目标插件。

@@ -17,6 +17,7 @@
 | 国服 Dalamud | [ottercorp/Dalamud](https://github.com/ottercorp/Dalamud)、[Dalamud API 版本说明](https://dalamud.dev/versions/)、[国服启动器的框架更新实现](https://github.com/ottercorp/FFXIVQuickLauncher/blob/CN/src/XIVLauncher.Common/Dalamud/DalamudUpdater.cs) | API Level、.NET 宿主、IFramework.Update/线程约束、IGameConfig/ScreenMode、CommandInfo 和 Dalamud.Bindings.ImGui。以实际安装的 Hooks 为构建基准；国际服 API 公告作为迁移预告，不能直接等同于国服已发布版本 |
 | 国服客户端结构库 | [ottercorp/FFXIVClientStructs](https://github.com/ottercorp/FFXIVClientStructs)、[Dalamud 子模块声明](https://github.com/ottercorp/Dalamud/blob/master/.gitmodules) | Framework/GameWindow/WindowHandle、Device/SwapChain 的尺寸、NewWidth/NewHeight/RequestResolutionChange。国服游戏补丁或框架携带的结构库更新后，重新核对布局与窗口刷新；上层源码参考 [aers/FFXIVClientStructs](https://github.com/aers/FFXIVClientStructs) |
 | OptiScaler | [Releases](https://github.com/optiscaler/OptiScaler/releases)、[配置定义](https://github.com/optiscaler/OptiScaler/blob/master/OptiScaler.ini) | DLSS 选择、模型覆盖开关、RenderPresetForAll、比例覆盖与六个挡位键的含义及默认值；启动时的配置读取与刷新后的重新读取行为 |
+| OptiScaler 自定义桥接 | [模块桥接客户端](RuntimeBridge.cs)，参考协议记录见 [PROVENANCE.md](PROVENANCE.md) | 管道名、消息格式、响应交付、运行时 Config 与 changeBackend 行为。官方 OptiScaler 更新可能替换掉桥接版；仅比较官方版本号不足以确认管道能力。当前旧协议不能关闭模型覆盖 |
 | NVIDIA DLSS | [SDK Releases](https://github.com/NVIDIA/DLSS/releases)、[SDK 预设定义](https://github.com/NVIDIA/DLSS/blob/main/include/nvsdk_ngx_defs.h)、[Streamline 预设定义](https://github.com/NVIDIA-RTX/Streamline/blob/main/include/sl_dlss.h) | K/L/M 的支持版本、用途、弃用和默认行为。变化影响 PresetHelp.cs、选项过滤及写入限制；以配置目录中实际 nvngx_dlss.dll 文件版本核对 |
 
 [AtmoOmen 更新说明页](https://info.atmoomen.top/docs/changelog/v2.2.2.0/)可补充 DR 发布内容；版本与依赖接口以实际发布包核对。
@@ -39,6 +40,7 @@
 | Dalamud/ImGui 接口找不到或 API Level 不匹配 | 实际 Hooks、Dalamud 与绑定 DLL、当前 .NET 宿主及 DR 渠道 |
 | 更新游戏后窗口刷新异常、输出尺寸异常或访问错误 | 对应国服客户端版本、Hooks 携带的 FFXIVClientStructs 和所使用字段/函数；编译通过不能验证原生结构布局仍正确 |
 | INI 已保存，重启后倍率或模型仍不符合预期 | 游戏实际使用的 OptiScaler 路径/版本、配置键与覆盖开关、DLSS 文件支持情况，再检查其他程序是否改写配置 |
+| INI 已保存，但热切换未生效或桥接回执未确认 | 实际加载的 OptiScaler 是否含桥接、管道服务端 PID、完整响应及后端重建；旧服务端立即断开可能丢失回执。配置估算尺寸不代表实际渲染输入 |
 
 故障记录应包含完整异常栈、DR 版本、实际 Hooks 目录、有关 DLL 的哈希和游戏/OptiScaler/DLSS 版本。只看到 OmenService 字样不能确定所有失效都来自同一种原因。
 

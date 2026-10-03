@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using DailyRoutines.Common.Module.Abstractions;
 using DailyRoutines.Common.Module.Enums;
@@ -23,7 +24,7 @@ public sealed class OptiScalerDlssController : ModuleBase
     public override ModuleInfo Info { get; } = new()
     {
         Title = "DLSS档位调节",
-        Description = "手动选择 DLSS Render Preset 和默认档位，保存配置并可刷新游戏画面。",
+        Description = "手动选择 DLSS 模型和挡位，保存配置并通过 OptiScaler 桥接请求热切换。",
         Category = ModuleCategory.System,
         Author = ["VintageVelvet"]
     };
@@ -44,12 +45,15 @@ public sealed class OptiScalerDlssController : ModuleBase
     private long nextConfigRead;
     private int outputWidth;
     private int outputHeight;
+    private Task<BridgeResult>? bridgeTask;
+    private CancellationTokenSource? bridgeCancellation;
+    private string runtimeStatus = string.Empty;
 
     private static readonly string[] QualityNames =
         ["DLAA", "Ultra Quality", "Quality", "Balanced", "Performance", "Ultra Performance"];
     private static readonly string[] QualityCommands = ["dlaa", "uq", "quality", "balanced", "performance", "up"];
     private static readonly float[] QualityRatios = [1f, 1.3f, 1.5f, 1.7f, 2f, 3f];
-    private bool Busy => refresh.IsRunning;
+    private bool Busy => refresh.IsRunning || bridgeTask != null;
 
     protected override void Init()
     {
@@ -74,6 +78,10 @@ public sealed class OptiScalerDlssController : ModuleBase
         if (primaryCommandRegistered) CommandManager.Instance().RemoveSubCommand("dlss");
         if (legacyCommandRegistered) CommandManager.Instance().RemoveSubCommand("optidlss");
         DService.Instance().Framework.Update -= OnConfigUpdate;
+        bridgeCancellation?.Cancel();
+        bridgeCancellation?.Dispose();
+        bridgeCancellation = null;
+        bridgeTask = null;
         configReadTask = null;
         refresh.Completed -= OnRefreshCompleted;
         refresh.Cancel();
@@ -129,6 +137,7 @@ public sealed class OptiScalerDlssController : ModuleBase
         ImGui.Separator();
         DrawCurrentConfig();
         if (writeStatus.Length != 0) ImGui.TextWrapped(writeStatus);
+        if (runtimeStatus.Length != 0) ImGui.TextWrapped(runtimeStatus);
         if (refresh.Status != "刷新尚未执行") ImGui.TextWrapped(refresh.Status);
         ImGui.Spacing();
 
@@ -168,7 +177,7 @@ public sealed class OptiScalerDlssController : ModuleBase
         }
         var input = currentConfig is { Success: true } value && value.Upscaler.Equals("dlss", StringComparison.OrdinalIgnoreCase)
             ? DlssConfigSnapshot.EstimateInput(outputWidth, outputHeight, value.Ratio, value.RatioOverrideEnabled) : null;
-        if (input.HasValue) ImGui.TextUnformatted($"渲染分辨率：{input.Value.Width} × {input.Value.Height}");
+        if (input.HasValue) ImGui.TextUnformatted($"配置渲染分辨率：{input.Value.Width} × {input.Value.Height}");
         ImGui.TextUnformatted(outputWidth > 0 && outputHeight > 0
             ? $"输出分辨率：{outputWidth} × {outputHeight}" : "输出分辨率：暂不可用");
         ImGui.TextDisabled($"DLSS：{dlssFileVersion}");
@@ -176,6 +185,18 @@ public sealed class OptiScalerDlssController : ModuleBase
 
     private void OnConfigUpdate(IFramework framework)
     {
+        if (bridgeTask is { IsCompleted: true })
+        {
+            BridgeResult result;
+            try { result = bridgeTask.GetAwaiter().GetResult(); }
+            catch (Exception ex) { result = new BridgeResult(false, $"热切换结果未确认：{ex.Message}"); }
+            bridgeTask = null;
+            bridgeCancellation?.Dispose();
+            bridgeCancellation = null;
+            runtimeStatus = result.Message;
+            if (result.Success) StartWindowRefresh();
+            else NotifyHelper.Instance().NotificationWarning(runtimeStatus);
+        }
         if (configReadTask is { IsCompleted: true })
         {
             if (configReadGeneration == snapshotGeneration && string.Equals(configReadPath, CurrentIniPath, StringComparison.OrdinalIgnoreCase))
@@ -226,7 +247,7 @@ public sealed class OptiScalerDlssController : ModuleBase
     {
         var parts = args.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (parts.Length == 0) { Overlay!.IsOpen = !Overlay.IsOpen; return; }
-        if (Busy) { NotifyHelper.Instance().NotificationWarning("请等待当前刷新结束"); return; }
+        if (Busy) { NotifyHelper.Instance().NotificationWarning("请等待当前热切换和刷新结束"); return; }
         var action = parts[0].ToLowerInvariant();
         if (action == "apply" && parts.Length == 1) { Apply(false); return; }
         if (action == "refresh" && parts.Length == 1) { StartRefresh(); return; }
@@ -267,6 +288,7 @@ public sealed class OptiScalerDlssController : ModuleBase
             var path = Path.GetFullPath(config.IniPath.Trim().Trim('"'));
             DlssIni.Write(path, config.SelectedRenderPreset, QualityRatios[config.SelectedQualityProfile]);
             writeStatus = "配置已保存";
+            runtimeStatus = string.Empty;
             ReadSettings();
             NotifyHelper.Instance().NotificationSuccess("DLSS 配置已保存");
             if (thenRefresh) StartRefresh();
@@ -275,6 +297,39 @@ public sealed class OptiScalerDlssController : ModuleBase
     }
 
     private void StartRefresh()
+    {
+        if (Busy) return;
+        // Refresh applies the saved file, rather than an unwritten dropdown selection.
+        var state = DlssConfigSnapshot.Read(CurrentIniPath);
+        if (!state.Success || !state.Upscaler.Equals("dlss", StringComparison.OrdinalIgnoreCase) ||
+            !state.RatioOverrideEnabled || !state.Ratio.HasValue ||
+            !Array.Exists(QualityRatios, value => Math.Abs(value - state.Ratio.Value) < 0.0001))
+        {
+            runtimeStatus = "无法热切换：请先保存有效的 DLSS 默认挡位配置";
+            NotifyHelper.Instance().NotificationWarning(runtimeStatus);
+            return;
+        }
+        var preset = state.PresetOverrideEnabled ? state.Preset ?? -1 : 0;
+        if (preset == 0)
+        {
+            runtimeStatus = "当前桥接不支持游戏默认热切换；保存的配置需重启游戏后应用";
+            NotifyHelper.Instance().NotificationWarning(runtimeStatus);
+            return;
+        }
+        if (!PresetHelp.IsSelectable(preset) || !PresetHelp.IsSupported(preset, dlssFileVersion))
+        {
+            runtimeStatus = "无法热切换：配置模型不受当前模块或 DLSS 文件支持";
+            NotifyHelper.Instance().NotificationWarning(runtimeStatus);
+            return;
+        }
+        bridgeCancellation = new CancellationTokenSource();
+        var token = bridgeCancellation.Token;
+        var ratio = (float)state.Ratio.Value;
+        runtimeStatus = "正在请求热切换……";
+        bridgeTask = Task.Run(() => RuntimeBridge.ApplyAsync(preset, ratio, token));
+    }
+
+    private void StartWindowRefresh()
     {
         if (!refresh.Start((uint)config.WindowedModeValue, (uint)config.BorderlessModeValue,
             config.RefreshDelayMs, config.ResizeWindowDuringRefresh, config.RequestSwapchainRefresh, config.WindowedRefreshScale))

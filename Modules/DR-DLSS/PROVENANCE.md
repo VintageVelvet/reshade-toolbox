@@ -8,9 +8,9 @@ DR.DlssModule 由 VintageVelvet 维护，提供手动模型与挡位控制、配
 
 DR 公开模块仓库（AGPL-3.0）仅作 API 用法参考。构建依赖来自已安装的 DR、OmenTools、Dalamud 及客户端结构程序集。
 
-`DlssBridge.cpp` / `.h` 作为通信协议的参考材料，曾用于核对命名管道请求与回执。
+`DlssBridge.cpp` / `.h` 作为通信协议的参考材料，用于核对命名管道请求、运行时配置更新与后端重建标记；0.1.3.0 恢复模块端的桥接客户端。
 
-桥接参考材料不属于 DR.DlssModule 当前功能或发布附件。
+桥接参考源码和原生 OptiScaler 桥接版 DLL 不随 DR.DlssModule 发布附件分发。
 
 ## 分发范围
 
