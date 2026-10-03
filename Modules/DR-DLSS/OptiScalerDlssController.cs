@@ -100,18 +100,9 @@ public sealed class OptiScalerDlssController : ModuleBase
                 if (!PresetHelp.IsSupported(value, dlssFileVersion)) continue;
                 if (ImGui.Selectable(PresetHelp.Label(value), config.SelectedRenderPreset == value))
                 { config.SelectedRenderPreset = value; SaveConfig(config); }
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.BeginTooltip();
-                    ImGui.PushTextWrapPos(ImGui.GetFontSize() * 32);
-                    ImGui.TextUnformatted(PresetHelp.Description(value));
-                    ImGui.PopTextWrapPos();
-                    ImGui.EndTooltip();
-                }
             }
             ImGui.EndCombo();
         }
-        if (ImGui.IsItemHovered()) DrawPresetTooltip(config.SelectedRenderPreset);
         ImGui.Dummy(new Vector2(0, ImGui.GetFontSize() * 0.65f));
         ImGui.TextUnformatted("DLSS 档位");
         ImGui.SetNextItemWidth(width);
@@ -155,26 +146,13 @@ public sealed class OptiScalerDlssController : ModuleBase
             ImGui.EndDisabled();
         }
         if (ImGui.CollapsingHeader("高级刷新设置")) DrawRefreshSettings();
-        if (ImGui.CollapsingHeader("快捷命令"))
-        {
-            ImGui.TextUnformatted("/pdr dlss：打开界面\n/pdr dlss dlaa | uq | quality | balanced | performance | up：写入并刷新\n/pdr dlss apply：只写入\n/pdr dlss refresh：只刷新\n/pdr dlss preset K：选择模型并写入刷新\n/pdr dlss select quality：只选择挡位\n旧命令 /pdr optidlss 仍可用。");
-            if (!primaryCommandRegistered) ImGui.TextWrapped("/pdr dlss 已被其他模块占用，请关闭旧模块后重新启用本模块。");
-        }
+        if (!primaryCommandRegistered) ImGui.TextWrapped("/pdr dlss 已被占用，请关闭旧模块后重新启用。");
         ImGui.PopTextWrapPos();
-    }
-
-    private static void DrawPresetTooltip(int preset)
-    {
-        ImGui.BeginTooltip();
-        ImGui.PushTextWrapPos(ImGui.GetFontSize() * 32);
-        ImGui.TextUnformatted(PresetHelp.Description(preset));
-        ImGui.PopTextWrapPos();
-        ImGui.EndTooltip();
     }
 
     private void DrawCurrentConfig()
     {
-        ImGui.TextUnformatted("当前配置（每秒读取）");
+        ImGui.TextUnformatted("当前配置");
         if (currentConfig is not { Success: true } state)
         {
             ImGui.TextWrapped(currentConfig == null ? "正在读取……" : $"读取失败：{currentConfig.Error}");
@@ -185,7 +163,7 @@ public sealed class OptiScalerDlssController : ModuleBase
                 : state.Preset.HasValue ? PresetName(state.Preset.Value) : "未设置";
             ImGui.TextWrapped($"配置模型：{preset}");
             var ratio = state.Ratio.HasValue ? state.Ratio.Value.ToString("0.###", CultureInfo.InvariantCulture) + "×" : "未设置或无效";
-            ImGui.TextWrapped($"配置倍率：{ratio}{(state.RatioOverrideEnabled ? string.Empty : "（覆盖关闭）")}");
+            ImGui.TextWrapped($"缩放倍率：{ratio}{(state.RatioOverrideEnabled ? string.Empty : "（覆盖关闭）")}");
             if (state.Upscaler.Length != 0 && !state.Upscaler.Equals("dlss", StringComparison.OrdinalIgnoreCase))
                 ImGui.TextWrapped($"配置升频器：{state.Upscaler}");
         }
@@ -228,7 +206,6 @@ public sealed class OptiScalerDlssController : ModuleBase
 
     private void DrawRefreshSettings()
     {
-        ImGui.TextWrapped("临时切到窗口模式并调整尺寸，再切回无边框以请求画面重建，最后恢复原窗口模式和位置。默认参数沿用旧模块。");
         ImGui.BeginDisabled(Busy);
         var changed = ImGui.InputInt("窗口模式值", ref config.WindowedModeValue);
         changed |= ImGui.InputInt("无边框模式值", ref config.BorderlessModeValue);
@@ -289,10 +266,10 @@ public sealed class OptiScalerDlssController : ModuleBase
         try
         {
             var path = Path.GetFullPath(config.IniPath.Trim().Trim('"'));
-            var backup = DlssIni.Write(path, config.SelectedRenderPreset, QualityRatios[config.SelectedQualityProfile]);
-            writeStatus = $"配置已保存；备份：{Path.GetFileName(backup)}";
+            DlssIni.Write(path, config.SelectedRenderPreset, QualityRatios[config.SelectedQualityProfile]);
+            writeStatus = "配置已保存";
             ReadSettings();
-            NotifyHelper.Instance().NotificationSuccess("DLSS配置已保存，供下次启动读取");
+            NotifyHelper.Instance().NotificationSuccess("DLSS 配置已保存");
             if (thenRefresh) StartRefresh();
         }
         catch (Exception error) { Error($"写入失败：{error.Message}"); }

@@ -25,12 +25,4 @@ internal static class PresetHelp
         _ => "请选择默认、K、L 或 M"
     };
 
-    internal static string Description(int value) => value switch
-    {
-        0 => "关闭 OptiScaler 的模型覆盖，跟随 FF14 原本的模型请求。缩放挡位仍按你的选择写入。",
-        11 => "DLSS 4 第一代 Transformer，主要用于 DLAA / Quality / Balanced；RTX 20/30 系列可优先选择。",
-        12 => "DLSS 4.5 第二代 Transformer，主要用于 4K Ultra Performance。需要 DLSS 310.5.0+，计算开销较高。",
-        13 => "DLSS 4.5 第二代 Transformer，主要用于 Performance。需要 DLSS 310.5.0+；RTX 20/30 系列计算开销较高。",
-        _ => "此值已移出日常选择列表，请选择默认、K、L 或 M。"
-    };
 }
