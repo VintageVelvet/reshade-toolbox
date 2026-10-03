@@ -1,5 +1,4 @@
-// Based on the user-provided OptiScalerDlssController.cs (original UI attribution: DeepSeek).
-// Maintained by VintageVelvet. See PROVENANCE.md for source and distribution scope.
+// Maintained by VintageVelvet. See PROVENANCE.md.
 #nullable enable
 using System;
 using System.Diagnostics;
