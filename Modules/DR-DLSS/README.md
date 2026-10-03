@@ -1,16 +1,17 @@
 # DR DLSS 手动模块
 
-维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。当前候选版 `0.1.1.0` 面向 DR `2.2.2.0` / Dalamud API 15，以用户实际安装的依赖构建。
+维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。当前候选版 `0.1.2.0` 面向 DR `2.2.2.0` / Dalamud API 15，以用户实际安装的依赖构建。
 
 ## 功能
 
-- DLSS Render Preset A–O（1–15）和六个默认挡位。
-- **写入配置**：备份并保存 OptiScaler.ini，供下次启动读取；启用桥接时也会发送运行时应用请求。
+- 模型只提供游戏默认、K、L、M；六个默认挡位保留。
+- **写入配置**：备份并保存 OptiScaler.ini，供下次启动读取。
 - **刷新生效**：执行窗口刷新，不写入模型或挡位。
-- **写入并刷新生效**：成功保存配置后执行刷新；桥接不可用也继续刷新。
+- **写入并刷新生效**：成功保存配置后执行窗口刷新。
 - 高级刷新参数保留旧默认值：窗口模式 1、无边框模式 2、等待 800 毫秒、临时窗口比例 0.95、调整窗口尺寸和 SwapChain 请求开启。
-- 桥接和桥接检测保留，首版迁移时默认关闭。只有手动开启后，写入操作才请求桥接。
-- 自定义缩放比例、自动切换及其命令已移除。
+- 每秒读取磁盘配置，显示配置模型、倍率、覆盖开关、游戏输出分辨率及估算的 DLSS 输入分辨率。
+- 作者栏只显示 VintageVelvet；原来源署名保存在 PROVENANCE.md 和源码注释中。
+- 自定义缩放比例、自动切换、运行时桥接及其设置已移除。
 
 | 挡位 | 比例 | 命令 |
 |---|---:|---|
@@ -21,24 +22,30 @@
 | Performance | 2.0 | `performance` |
 | Ultra Performance | 3.0 | `up` |
 
-Preset 列表沿用原模块，不代表每个模型值均经过当前 DLSS DLL 实测。配置中的未知模型值或非默认比例会显示出来，写入前需要选择支持的值。
+旧版、弃用和回退默认的占位值已移出选择列表和快捷命令。旧配置仍会如实显示，不自动改写；写入前需要选择游戏默认、K、L 或 M。
 
 ## 预设选择提示
 
-下拉选项包含简短用途标签，悬停可查看解释；选择后，选项下方显示说明和与当前挡位的搭配提示。选择仍只改变待写入设置，由用户点击手动按钮应用。
+两个选择框加宽，模型宽度至少容纳最长完整选项名称，并增加上下间距。配置路径输入框使用整行可用宽度，并按完整路径测量最小宽度，单行显示。下拉选项直接显示用途，详细说明放在悬停提示中；选择只改变待写入设置，由用户点击按钮应用。
 
 | 预设 | 提示 |
 |---|---|
+| 游戏默认 | 关闭 OptiScaler 模型覆盖，将模型请求交还 FF14；缩放挡位仍单独保存 |
 | K | DLAA / Quality / Balanced 的常用起点；RTX 20/30 系列可优先考虑 |
 | M | 面向 Performance（比例 2.0），需要支持 DLSS 4.5 的文件版本 |
 | L | 面向 4K Ultra Performance（比例 3.0），计算开销较高 |
-| J | 与 K 对照；可能略少拖影，但更容易闪烁，通常优先 K |
-| A–F | 旧版兼容或弃用预设，保留选项并标明状态 |
-| G / H / I / N / O | 官方标记为回退默认行为，不推荐手动选择 |
 
-建议依据 [NVIDIA 官方 DLSS 4.5 说明](https://www.nvidia.com/en-us/geforce/news/dlss-4-5-dynamic-multi-frame-gen-6x-2nd-gen-transformer-super-res/)、[SDK v310.5.3 预设定义](https://github.com/NVIDIA/DLSS/blob/v310.5.3/include/nvsdk_ngx_defs.h)和[当前 Streamline 定义](https://github.com/NVIDIA-RTX/Streamline/blob/main/include/sl_dlss.h)。L/M 从 [310.5.0 SDK](https://github.com/NVIDIA/DLSS/releases/tag/v310.5.0)加入。310.5.3 SDK 已移除 A–E，F 标记弃用；当前新版 SDK 重新列出 E，但仍标弃用。头文件移除并不证明实际 DLL 必然拒绝历史数值。
+建议依据 [NVIDIA 官方 DLSS 4.5 说明](https://www.nvidia.com/en-us/geforce/news/dlss-4-5-dynamic-multi-frame-gen-6x-2nd-gen-transformer-super-res/)、[SDK v310.5.3 预设定义](https://github.com/NVIDIA/DLSS/blob/v310.5.3/include/nvsdk_ngx_defs.h)和[当前 Streamline 定义](https://github.com/NVIDIA-RTX/Streamline/blob/main/include/sl_dlss.h)。根据 [310.2 系列发布说明](https://github.com/NVIDIA/DLSS/releases/tag/v310.2.1)和 [310.5.0 发布说明](https://github.com/NVIDIA/DLSS/releases/tag/v310.5.0)，K 要求文件版本至少 310.2.0，L/M 至少 310.5.0；列表按检测到的文件版本过滤，命令与写入也拒绝不支持的选择。未知文件版本时只提供游戏默认。
 
-界面显示配置文件所在目录中 nvngx_dlss.dll 的文件版本；这不等同于验证游戏实际加载或驱动覆盖后的模型。字母顺序不代表画质等级，推荐方向仍需结合游戏画面和帧率比较。
+游戏默认写入 `RenderPresetOverride=false`、`RenderPresetForAll=0`，不是选择 G/H/I/N/O 等占位值；[OptiScaler 配置定义](https://github.com/optiscaler/OptiScaler/blob/master/OptiScaler.ini)说明模型覆盖关闭时不强制预设。这不替换当前使用的 DLSS DLL。
+
+## 当前配置与分辨率
+
+后台每秒重新读取 INI，外部改动也会更新“当前配置”，不会覆盖尚未写入的下拉选择。更换路径、手动读取或成功写入后，过期的后台结果不会覆盖新快照；读失败清除配置显示。
+
+游戏输出尺寸在框架更新线程读取 `Device.Instance()->SwapChain->Width/Height`。输入尺寸按输出尺寸除以配置倍率并取整，注明“按配置计算”；仅在配置选择 DLSS 且比例覆盖开启时显示。它是配置估算，不是 DLSS Evaluate 输入纹理的实际测量，也不能证明当前游戏进程已重新读取 INI。
+
+界面显示配置目录中 nvngx_dlss.dll 的文件版本，模块初始化和重新读取时更新；该文件版本不证明驱动覆盖后的实际模型。
 
 ## 使用本地构建
 
@@ -56,28 +63,31 @@ Preset 列表沿用原模块，不代表每个模型值均经过当前 DLSS DLL 
 - `/pdr dlss quality` 等六个挡位名：选择、写入并刷新。
 - `/pdr dlss set quality`：相同操作，保留旧用法。
 - `/pdr dlss select quality`：只选择挡位，尚未写入。
-- `/pdr dlss preset K` 或 `preset 11`：选择模型、写入并刷新。
+- `/pdr dlss preset default` 或 `preset 0`：恢复游戏模型选择、写入并刷新。
+- `/pdr dlss preset K|L|M` 或 `preset 11|12|13`：选择模型、写入并刷新。
 - `/pdr dlss apply`：写入配置。
 - `/pdr dlss refresh`：只刷新画面。
 - `/pdr optidlss`：旧命令别名。
 
-## 刷新和桥接
+## 刷新与桥接移除
 
 窗口刷新临时切换模式和窗口尺寸，尝试触发画面重建；本版最后恢复实际原窗口模式、位置和最大化状态。所有游戏配置及窗口操作在框架更新线程执行，取消或失败时也尝试恢复。窗口最小化、无法读取原状态或参数无效时不开始刷新。
 
-桥接通过消息模式命名管道 `OptiScalerDlssBridge` 发送 `set ratio <比例> preset <模型> save 1`。`ok applied` 表示桥接接受配置并请求切换，不能代替画面验证。桥接使用异步连接及收发，总请求有统一超时，不同步阻塞游戏更新。它使用定制 OptiScaler 的 INI 保存机制，可能重新序列化配置；模块自己的五键写入保留无关内容及原始换行。桥接关闭时不会发出请求。
+桥接原本通过命名管道请求定制 OptiScaler 在当前进程应用模型和比例。2026-10-03 只读探测确认管道归属正在运行的游戏进程，连接成功，但只发 `ping` 后读到 0 字节，没有预期确认。已定位到原生桥接无回执，尚未定位 C++ 内部原因；详情见 UPSTREAM.md。
+
+0.1.2.0 移除模块桥接客户端、检测和设置。配置持久保存、备份及窗口刷新不依赖它，游戏现有桥接版 DLL 不修改。窗口刷新仅请求画面重建；下次启动读取配置是主要验收条件，当前进程即时重读 INI 仍需游戏验证。
 
 ## 构建与验证
 
 ```powershell
 ./Build.ps1
 ./tests/Test-Ini.ps1
-./tests/Test-Bridge.ps1
+./tests/Test-Snapshot.ps1
 ```
 
 Build.ps1 使用 PowerShell 7 自带的 Roslyn 编译器；宿主需基于 .NET 10。默认从当前用户的 XIVLauncherCN 安装中找到最高版本 DR、最近的正式 Hooks 目录和 .NET 10 运行时。也可以传入 `-LauncherRoot`、`-PluginDirectory`、`-HookDirectory` 和 `-OutputDirectory`。源码、依赖哈希及输出哈希记录在 `out/build-info.json`。构建只读取依赖元数据，不执行目标插件。
 
-INI 测试只操作临时副本；桥接测试使用随机测试管道。测试不会操作游戏窗口或游戏管道。配置替换前检查已观察到的外部改动；检查与实际替换之间仍存在很短的竞争窗口。
+INI 测试只操作临时副本；快照测试使用隔离临时配置。测试不会操作游戏窗口或游戏管道。配置替换前检查已观察到的外部改动；检查与实际替换之间仍存在很短的竞争窗口。
 
 ## 持续维护
 

@@ -39,7 +39,7 @@ public static class DlssIni
 
     public static string Write(string path, int preset, float ratio)
     {
-        if (preset < 1 || preset > 15) throw new ArgumentOutOfRangeException(nameof(preset));
+        if (preset is not (0 or 11 or 12 or 13)) throw new ArgumentOutOfRangeException(nameof(preset), "Select default, K, L, or M.");
         if (float.IsNaN(ratio) || float.IsInfinity(ratio) || ratio < 1f || ratio > 3f)
             throw new ArgumentOutOfRangeException(nameof(ratio));
 
@@ -60,7 +60,7 @@ public static class DlssIni
         }
 
         SetValue(lines, "Upscalers", "Dx11Upscaler", "dlss", newline);
-        SetValue(lines, "DLSS", "RenderPresetOverride", "true", newline);
+        SetValue(lines, "DLSS", "RenderPresetOverride", preset == 0 ? "false" : "true", newline);
         SetValue(lines, "DLSS", "RenderPresetForAll", preset.ToString(CultureInfo.InvariantCulture), newline);
         SetValue(lines, "UpscaleRatio", "UpscaleRatioOverrideEnabled", "true", newline);
         SetValue(lines, "UpscaleRatio", "UpscaleRatioOverrideValue", ratio.ToString("F6", CultureInfo.InvariantCulture), newline);

@@ -71,7 +71,14 @@ try {
     Assert-True ($taskFixtureOutput.Contains("[Other]`r`nKeep = 中文`r`n")) 'Unrelated section changed.'
     Assert-True ([DailyRoutines.ModulesPublic.DlssIni]::GetValue([IO.File]::ReadAllLines($taskFixture), 'Upscalers', 'Dx11Upscaler') -ceq 'dlss') 'Missing section was not created.'
 
-    foreach ($taskArguments in @(@(0,2), @(16,2), @(11,0.9), @(11,3.1), @(11,[float]::NaN), @(11,[float]::PositiveInfinity))) {
+    [DailyRoutines.ModulesPublic.DlssIni]::Write($taskFixture, 0, 1.5) | Out-Null
+    $taskDefaultLines = [IO.File]::ReadAllLines($taskFixture)
+    Assert-True ([DailyRoutines.ModulesPublic.DlssIni]::GetValue($taskDefaultLines, 'DLSS', 'RenderPresetOverride') -ceq 'false') 'Default did not disable preset override.'
+    Assert-True ([DailyRoutines.ModulesPublic.DlssIni]::GetValue($taskDefaultLines, 'DLSS', 'RenderPresetForAll') -ceq '0') 'Default retained a forced preset.'
+    Assert-True ([DailyRoutines.ModulesPublic.DlssIni]::GetValue($taskDefaultLines, 'UpscaleRatio', 'UpscaleRatioOverrideValue') -ceq '1.500000') 'Default lost the chosen ratio.'
+    Assert-True ([IO.File]::ReadAllText($taskFixture).Contains("[Other]`r`nKeep = 中文`r`n")) 'Default changed unrelated content.'
+
+    foreach ($taskArguments in @(@(-1,2), @(1,2), @(6,2), @(7,2), @(10,2), @(14,2), @(15,2), @(16,2), @(11,0.9), @(11,3.1), @(11,[float]::NaN), @(11,[float]::PositiveInfinity))) {
         $taskBefore = [IO.File]::ReadAllBytes($taskFixture)
         $taskCountBefore = @(Get-ChildItem -LiteralPath $taskTestRoot -File).Count
         $taskRejected = $false
