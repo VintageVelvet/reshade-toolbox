@@ -1,0 +1,4 @@
+out/
+bin/
+obj/
+monitor-state.local.json

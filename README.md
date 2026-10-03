@@ -1,6 +1,6 @@
 # ReShade Toolbox
 
-VintageVelvet 的个人 ReShade 着色器与预设维护仓库。
+VintageVelvet 维护的 ReShade 着色器、预设与 DR 本地模块仓库。
 
 ## 着色器
 
@@ -17,10 +17,15 @@ VintageVelvet 的个人 ReShade 着色器与预设维护仓库。
 
 LandscapeComposition 适合全屏构图。封面画板或内部照片窗口的构图，请使用 AlbumFrame 自带的 AlbumFrame_Guides，并排在 AlbumFrame 遮罩之后。
 
+## DR 模块
+
+[DR DLSS 手动模块](Modules/DR-DLSS/README.md)通过 DR 的本地模块管理加载，提供 DLSS 模型与挡位选择、配置保存、状态读取和手动刷新。安装说明、独立发布的 DLL 及兼容版本见模块文档。
+
 ## 文档与目录
 
 - `Shaders/`：着色器源码。
 - `Presets/`：预设。
+- `Modules/DR-DLSS/`：[模块使用说明](Modules/DR-DLSS/README.md)与[来源记录](Modules/DR-DLSS/PROVENANCE.md)。
 - `docs/`：使用说明、[版本记录](docs/CHANGELOG.md)与[验证记录](docs/VALIDATION.md)。
 
 ## 许可与署名

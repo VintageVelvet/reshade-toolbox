@@ -2,7 +2,7 @@
 
 ## LandscapeComposition.fx
 
-此文件基于用户现有 AuroraShade（原 ReShade-CN2）1207 包内的 `Shaders/GS/VerticalPreviewer.fx` 0.3。
+此文件基于 AuroraShade（原 ReShade-CN2）1207 发行包内的 `Shaders/GS/VerticalPreviewer.fx` 0.3。
 
 参考文件 SHA-256：`6CAB70357CCE7D7FDCEC6F62228BD955874C2C5529E3681162A909E4D841DB12`。
 
@@ -23,7 +23,7 @@
 
 ## 分发范围
 
-标准 `ReShade.fxh` 由用户现有安装提供，本仓库不再分发该依赖。
+标准 `ReShade.fxh` 由 ReShade 使用环境提供，本仓库不再分发该依赖。
 
 验证使用的编译工具、原始着色器包和游戏素材没有提交到仓库。若未来分发编译后的着色器或打包第三方依赖，需一并附相应许可与署名，尤其 BSD 对二进制分发也要求在文档或随附材料中保留声明。
 
