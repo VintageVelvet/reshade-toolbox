@@ -55,13 +55,32 @@
 
 ## 安装与使用
 
-1. 从发布页下载 `DR.DlssModule.dll`；自行构建时，产物位于 `out/DR.DlssModule.dll`。
-2. 在 DR 本地模块管理中添加该 DLL 的完整路径并启用。
-3. 打开“DLSS档位调节”或运行 `/pdr dlss`，确认配置路径指向正在使用的游戏目录。
-4. 选择模型和挡位，然后使用“写入并刷新生效”。状态分别显示文件保存结果和窗口刷新结果。
-5. 下次启动游戏后检查配置及实际画面。游戏内即时生效和重启后生效需要实际验证。
+1. 先完成 OptiScaler 安装并确认其在游戏中正常加载，准备好下文说明的 `OptiScaler.ini`。
+2. 从发布页下载 `DR.DlssModule.dll`；自行构建时，默认产物为模块源码目录下的 `out/DR.DlssModule.dll`。
+3. 在 DR 本地模块管理中添加该 DLL 的完整路径并启用。
+4. 打开“DLSS档位调节”或运行 `/pdr dlss`，展开“配置文件”，点击“自动定位”，检查读取结果；自定义位置按下文手动填写。
+5. 确认“当前配置”成功读取后，选择模型和挡位，使用“写入并刷新生效”。状态分别显示文件保存结果和窗口刷新结果。
+6. 下次启动游戏后检查配置及实际画面。游戏内即时生效和重启后生效需要实际验证。
 
 需要回退模块版本时，在 DR 中停用当前版本，再添加对应版本的 DLL。每次写入的 INI 备份放在配置文件旁边，名称为 `OptiScaler.ini.drbackup-*`；需要回退配置时，在游戏关闭后恢复对应备份。
+
+### OptiScaler.ini 从哪里取得
+
+`OptiScaler.ini` 是 OptiScaler 的配置文件，FF14 或 DR 的默认安装不会提供它。安装方法见 [OptiScaler 官方安装说明](https://github.com/optiscaler/OptiScaler/wiki/Manual-Installation)，游戏相关要求见 [FF14 专页](https://github.com/optiscaler/OptiScaler/wiki/Final-Fantasy-XIV-Dawntrail)。
+
+已经安装 OptiScaler 时，先在资源管理器打开正在运行的 `ffxiv_dx11.exe` 所在目录，通常是游戏安装目录下的 `game`。也可以在任务管理器“详细信息”中右键 `ffxiv_dx11.exe`，选择“打开文件所在的位置”。正常安装布局中的配置文件位于该程序旁，即 `游戏安装目录/game/OptiScaler.ini`。
+
+如果目录中没有该文件，从 [OptiScaler 官方发布页](https://github.com/optiscaler/OptiScaler/releases)取得与已安装版本对应的安装包，按安装说明将其中的 `OptiScaler.ini` 放到游戏程序旁，并保持文件名不变。已有配置则继续使用现有文件。本模块读取、备份和修改已有 INI，不负责安装 OptiScaler，也不会自动下载或生成缺失的 INI。
+
+### 自动定位与手动路径
+
+“自动定位”根据当前游戏进程的可执行文件目录填写 `OptiScaler.ini` 的预期完整路径，保存路径后立即读取。首次启用时，已保存路径为空也会自动填写；已有路径会保留。这个操作不会扫描磁盘或其他目录，路径被填入后应以读取结果确认文件是否可用。
+
+如果 OptiScaler 使用自定义配置位置，在“配置文件”的输入框中填写它实际读取的 INI 完整路径，结束编辑后模块会保存并读取；“重新读取”重读当前路径。读取失败时先确认文件存在及路径正确；缺失文件时写入也会失败。每秒状态更新只读取当前指定文件，不会重新定位。
+
+### 自行构建的输出目录
+
+`out/` 是 `Build.ps1` 默认创建的构建产出目录，位于 `Modules/DR-DLSS/` 下，包含 `DR.DlssModule.dll` 和 `build-info.json`；可通过 `-OutputDirectory` 改变位置。它是通用的源码目录结构。直接下载发布 DLL 时无需创建 out，游戏中的 INI 路径也不指向这里。
 
 ## 快捷命令
 
@@ -82,6 +101,8 @@
 窗口刷新请求画面重建；配置持久保存和下次启动读取是主要验收条件，当前进程即时重读 INI 仍需游戏验证。
 
 ## 构建与验证
+
+在 `Modules/DR-DLSS/` 目录运行：
 
 ```powershell
 ./Build.ps1
