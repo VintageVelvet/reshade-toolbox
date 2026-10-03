@@ -2,6 +2,12 @@
 
 维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。当前候选版 `0.1.2.0` 面向 DR `2.2.2.0` / Dalamud API 15，以用户实际安装的依赖构建。
 
+## 下载 DLL
+
+[直接下载 DR.DlssModule.dll](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.2.0/DR.DlssModule.dll) · [版本发布页与安装说明](https://github.com/VintageVelvet/reshade-toolbox/releases/tag/dr-dlss-v0.1.2.0) · [SHA256 校验文件](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.2.0/SHA256SUMS.txt)
+
+当前版本标记为预发布版，游戏验收进度见 VALIDATION.md。远程可直接下载成品，无需本地编译。
+
 ## 功能
 
 - 模型只提供游戏默认、K、L、M；六个默认挡位保留。
@@ -91,6 +97,6 @@ INI 测试只操作临时副本；快照测试使用隔离临时配置。测试�
 
 ## 持续维护
 
-由用户通知上游更新后按需维护，不设置定时任务。源码、构建脚本、行为测试与维护记录保存在专用远程分支；候选 DLL 在本地构建，构建产物和含本机路径的构建信息不提交到 Git。
+由用户通知上游更新后按需维护，不设置定时任务。源码、构建脚本、行为测试与维护记录保存在专用远程分支；本地 out 保持忽略。交付 DLL 和 SHA256 校验文件作为 GitHub Release 附件发布，每个版本用 `dr-dlss-v<版本>` 标签固定到对应源码提交；未完成游戏验收的版本标记为预发布。构建目录、临时文件、依赖和本机状态不整包同步到远程，也不覆盖已发布版本的附件。
 
 更新来源及影响判断见 [UPSTREAM.md](UPSTREAM.md)。验证状态见 [VALIDATION.md](VALIDATION.md)。来源说明见 [PROVENANCE.md](PROVENANCE.md)。编译、文件写入检查与游戏内验证分开记录。
