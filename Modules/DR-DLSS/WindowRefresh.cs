@@ -134,14 +134,19 @@ internal sealed class WindowRefresh
                     Advance(Stage.OriginalMode);
                     break;
                 case Stage.OriginalMode:
-                    if (originalMode != borderlessMode) SetMode(originalMode);
+                    if (originalMode == borderlessMode)
+                    {
+                        Advance(Stage.OriginalGeometry, 0);
+                        break;
+                    }
+                    SetMode(originalMode);
                     Status = "正在恢复原窗口模式";
                     Advance(Stage.OriginalGeometry);
                     break;
                 case Stage.OriginalGeometry:
-                    RestoreGeometry();
+                    var restored = RestoreGeometry();
                     Status = "正在等待原窗口状态稳定";
-                    Advance(Stage.Finish);
+                    Advance(Stage.Finish, restored ? delayMs : 0);
                     break;
                 case Stage.Finish:
                     if (!DService.Instance().GameConfig.System.TryGet(nameof(SystemConfigOption.ScreenMode), out uint actualMode) ||
@@ -180,10 +185,10 @@ internal sealed class WindowRefresh
         snapshotReady = true;
     }
 
-    private void Advance(Stage next)
+    private void Advance(Stage next, int? waitMs = null)
     {
         stage = next;
-        nextStep = Environment.TickCount64 + delayMs;
+        nextStep = Environment.TickCount64 + (waitMs ?? delayMs);
     }
 
     private static void SetMode(uint value) =>
@@ -202,23 +207,43 @@ internal sealed class WindowRefresh
             throw new Win32Exception(Marshal.GetLastWin32Error(), "调整游戏窗口失败");
     }
 
-    private void RestoreGeometry()
+    private bool RestoreGeometry()
     {
         EnsureWindow();
-        // 模式切换本身也可能改变矩形，因此即使未启用临时缩放也恢复原矩形。
-        SetRect(originalRect);
+        var changed = false;
+        // A no-op SetWindowPos/SetWindowPlacement can still provoke another game resize.
+        // Skip only after observing the actual original rectangle and placement.
+        if (!GetWindowRect(window, out var actualRect) || !actualRect.SameAs(originalRect))
+        {
+            SetRect(originalRect);
+            changed = true;
+        }
         // 同时恢复最大化状态及最大化前的正常窗口位置，避免改变后续“还原”尺寸。
-        if (!SetWindowPlacement(window, in originalPlacement))
-            throw new Win32Exception(Marshal.GetLastWin32Error(), "恢复原窗口状态失败");
-        if (requestSwapchain) RequestResolution();
+        var actualPlacement = new WindowPlacement { Length = Marshal.SizeOf<WindowPlacement>() };
+        if (!GetWindowPlacement(window, ref actualPlacement) || !actualPlacement.SameAs(originalPlacement))
+        {
+            if (!SetWindowPlacement(window, in originalPlacement))
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "恢复原窗口状态失败");
+            changed = true;
+        }
+        if (requestSwapchain) changed |= RequestResolution();
+        return changed;
     }
 
-    private unsafe void RequestResolution()
+    private unsafe bool RequestResolution()
     {
         EnsureWindow();
         if (!GetClientRect(window, out var rect) || !rect.IsValid)
             throw new InvalidOperationException("无法读取窗口客户区尺寸");
+        var device = Device.Instance();
+        if (device == null) throw new InvalidOperationException("图形设备尚不可用");
+        // Keep the two deliberate resize requests above. Only the final restoration may
+        // reuse a completed swap chain when both dimensions match and no change is pending.
+        if (device->RequestResolutionChange == 0 && device->SwapChain != null &&
+            device->SwapChain->Width == (uint)rect.Width && device->SwapChain->Height == (uint)rect.Height)
+            return false;
         RequestResolution(rect.Width, rect.Height);
+        return true;
     }
 
     private static unsafe void RequestResolution(int width, int height)
@@ -278,13 +303,19 @@ internal sealed class WindowRefresh
         public readonly int Width => Right - Left;
         public readonly int Height => Bottom - Top;
         public readonly bool IsValid => Width > 0 && Height > 0;
+        public readonly bool SameAs(Rect other) =>
+            Left == other.Left && Top == other.Top && Right == other.Right && Bottom == other.Bottom;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct MonitorInfo { public int Size; public Rect Monitor, Work; public uint Flags; }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct Point { public int X, Y; }
+    private struct Point
+    {
+        public int X, Y;
+        public readonly bool SameAs(Point other) => X == other.X && Y == other.Y;
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct WindowPlacement
@@ -293,6 +324,10 @@ internal sealed class WindowRefresh
         public uint Flags, ShowCommand;
         public Point MinimumPosition, MaximumPosition;
         public Rect NormalPosition;
+        public readonly bool SameAs(WindowPlacement other) =>
+            Flags == other.Flags && ShowCommand == other.ShowCommand &&
+            MinimumPosition.SameAs(other.MinimumPosition) && MaximumPosition.SameAs(other.MaximumPosition) &&
+            NormalPosition.SameAs(other.NormalPosition);
     }
 
     [DllImport("user32.dll", ExactSpelling = true)]
