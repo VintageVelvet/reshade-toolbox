@@ -122,7 +122,7 @@
 
 Build.ps1 使用 PowerShell 7 自带的 Roslyn 编译器；宿主需基于 .NET 10。默认从当前用户的 XIVLauncherCN 安装中找到最高版本 DR、最近的正式 Hooks 目录和 .NET 10 运行时。也可以传入 `-LauncherRoot`、`-PluginDirectory`、`-HookDirectory` 和 `-OutputDirectory`。源码、依赖哈希及输出哈希记录在 `out/build-info.json`。构建只读取依赖元数据，不执行目标插件。
 
-INI 测试只操作临时副本；快照测试使用隔离临时配置。测试不会操作游戏窗口。配置替换前检查已观察到的外部改动；检查与实际替换之间仍存在很短的竞争窗口。
+INI 测试默认生成自含样本；也可通过 `-SourceIni` 指定已有 INI，测试仅操作它的临时副本。快照测试使用隔离临时配置。这两项测试无需游戏安装或运行，也不会操作游戏窗口。配置替换前检查已观察到的外部改动；检查与实际替换之间仍存在很短的竞争窗口。
 
 ## 持续维护
 

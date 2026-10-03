@@ -25,6 +25,7 @@ LandscapeComposition 适合全屏构图。封面画板或内部照片窗口的�
 
 - `Shaders/`：着色器源码。
 - `Presets/`：预设。
+- `Modules/DR-DLSS/`：[模块使用说明](Modules/DR-DLSS/README.md)与[来源记录](Modules/DR-DLSS/PROVENANCE.md)。
 - `docs/`：使用说明、[版本记录](docs/CHANGELOG.md)与[验证记录](docs/VALIDATION.md)。
 
 ## 许可与署名

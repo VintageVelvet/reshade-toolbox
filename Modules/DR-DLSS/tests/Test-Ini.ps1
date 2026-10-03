@@ -1,5 +1,5 @@
 param(
-    [string] $SourceIni = (Join-Path $env:USERPROFILE 'Downloads\最终幻想XIV\game\OptiScaler.ini')
+    [string] $SourceIni = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -38,6 +38,34 @@ function Get-UnrelatedText([string] $Text) {
 }
 
 try {
+    if ([string]::IsNullOrWhiteSpace($SourceIni)) {
+        $SourceIni = Join-Path $taskTestRoot 'source-fixture.ini'
+        $taskSourceText = @'
+; Representative configuration; preserve unrelated content.
+[Upscalers]
+Dx11Upscaler = auto
+Dx12Upscaler = auto
+
+[DLSS]
+Enabled = auto ; unrelated switch
+RenderPresetOverride = false
+RenderPresetForAll = 11
+LibraryPath = auto
+
+[UpscaleRatio]
+UpscaleRatioOverrideEnabled = false
+UpscaleRatioOverrideValue = 2.000000
+
+[QualityOverrides]
+QualityRatioOverrideEnabled = auto
+
+[Other]
+# Keep comments and Chinese text exactly.
+Label = 中文测试配置
+Value = unchanged
+'@
+        [IO.File]::WriteAllText($SourceIni, $taskSourceText.Replace("`r`n", "`n").Replace("`n", "`r`n"), [Text.UTF8Encoding]::new($false))
+    }
     $taskActual = Join-Path $taskTestRoot 'actual-copy.ini'
     Copy-Item -LiteralPath $SourceIni -Destination $taskActual
     $taskOriginal = [IO.File]::ReadAllBytes($taskActual)
