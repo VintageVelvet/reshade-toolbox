@@ -1,12 +1,14 @@
 # DR DLSS 手动模块
 
-维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。适配基线为 DR `2.2.2.0` / Dalamud API 15；候选版 `0.1.4.0` 已暂停分发。
+维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。当前版本 `0.1.5.0`，适配 DR `2.2.2.0` / Dalamud API 15。
 
 这里的“本地模块”指 DR 的模块加载类别：模块通过 DR 的本地模块管理单独加载，尚未收录进 DR 官方模块包，不随 DR 版本一起发布。本模块的源码和 DLL 在本仓库独立维护与交付。
 
-## 下载状态
+## 下载 DLL
 
-0.1.4.0 收到“写入并刷新生效”后游戏崩溃的报告，已暂停公开下载。重启游戏后，维护者确认同一次游戏运行中的 2.0 → DLAA 和 DLAA → 2.0 双向热切换成功，同时报告切换后的加载明显变慢。崩溃原因和加载延迟仍需处理，当前没有通过完整稳定性验收的热切换推荐版本。定位与验证状态见 [VALIDATION.md](VALIDATION.md)。
+[直接下载 DR.DlssModule.dll](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.5.0/DR.DlssModule.dll) · [版本发布页](https://github.com/VintageVelvet/reshade-toolbox/releases/tag/dr-dlss-v0.1.5.0) · [SHA256 校验文件](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.5.0/SHA256SUMS.txt)
+
+0.1.5.0 已完成六个默认挡位的逐项游戏内使用验收，切换速度可接受，测试期间没有修改 ReShade 设置。当前按预发布版交付，具体验证范围及旧版崩溃记录见 [VALIDATION.md](VALIDATION.md)。0.1.4.0 保持暂停分发。
 
 ## 功能
 
@@ -58,8 +60,6 @@
 当前桥接没有运行尺寸查询接口，模块尚不能读取 OptiScaler 菜单中的实际渲染尺寸。可在角色加载后按 Insert 打开 OptiScaler，查看底部的 `渲染尺寸 → 目标尺寸 [显示尺寸]`；在输出为 2560×1440 时，DLAA 应显示 2560×1440 的渲染输入。若覆盖倍率已为 1.000，但底部仍是 1280×720 → 2560×1440，实际输入仍是 2×，不能认定 DLAA 已生效。
 
 ## 安装与使用
-
-以下是模块操作流程说明。当前候选因崩溃报告暂停分发，热切换和窗口刷新步骤暂勿执行。
 
 1. 先完成 OptiScaler 安装并确认其在游戏中正常加载，准备好下文说明的 `OptiScaler.ini`。
 2. 从发布页下载 `DR.DlssModule.dll`；自行构建时，默认产物为模块源码目录下的 `out/DR.DlssModule.dll`。
@@ -126,7 +126,7 @@
 
 可在 ReShade 的 Settings 中使用“Load only enabled effects”（只加载已启用效果），减少与当前预设无关的编译。6.6.1 的[跳过条件](https://github.com/crosire/reshade/blob/v6.6.1/source/runtime.cpp#L1519)要求预设的 Techniques 列表非空；空预设仍可能加载全部效果，不能保证勾选后就消除卡顿。本模块不修改 ReShade 配置或预设。
 
-0.1.5.0 源码保留临时尺寸与完整显示器尺寸两次请求，只在实际原窗口矩形、位置和最大化状态已经一致时跳过重复恢复；最终交换链尺寸已与客户区一致且没有待处理尺寸变化时，也跳过同尺寸请求。原模式已是无边框时省去无操作等待。该构建尚未完成游戏性能与稳定性验证，未公开发布。
+0.1.5.0 保留临时尺寸与完整显示器尺寸两次请求，只在实际原窗口矩形、位置和最大化状态已经一致时跳过重复恢复；最终交换链尺寸已与客户区一致且没有待处理尺寸变化时，也跳过同尺寸请求。原模式已是无边框时省去无操作等待。游戏内逐项挡位测试反馈切换速度已可接受，无需为此调整 ReShade 设置；实际耗时因环境而异。
 
 ## 构建与验证
 
