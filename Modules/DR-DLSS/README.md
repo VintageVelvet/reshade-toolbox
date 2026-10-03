@@ -1,12 +1,14 @@
 # DR DLSS 手动模块
 
-维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。当前候选版 `0.1.2.0` 面向 DR `2.2.2.0` / Dalamud API 15，以用户实际安装的依赖构建。
+维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。当前候选版 `0.1.2.0` 面向 DR `2.2.2.0` / Dalamud API 15。
+
+这里的“本地模块”指 DR 的模块加载类别：模块通过 DR 的本地模块管理单独加载，尚未收录进 DR 官方模块包，不随 DR 版本一起发布。本模块的源码和 DLL 在本仓库独立维护与交付。
 
 ## 下载 DLL
 
 [直接下载 DR.DlssModule.dll](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.2.0/DR.DlssModule.dll) · [版本发布页与安装说明](https://github.com/VintageVelvet/reshade-toolbox/releases/tag/dr-dlss-v0.1.2.0) · [SHA256 校验文件](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.2.0/SHA256SUMS.txt)
 
-当前版本标记为预发布版，游戏验收进度见 VALIDATION.md。远程可直接下载成品，无需本地编译。
+当前版本标记为预发布版，游戏验收进度见 VALIDATION.md。发布页提供可直接使用的 DLL，无需自行编译。
 
 ## 功能
 
@@ -30,7 +32,7 @@
 
 ## 预设选择提示
 
-两个选择框加宽，模型宽度至少容纳最长完整选项名称，并增加上下间距。配置路径输入框使用整行可用宽度，并按完整路径测量最小宽度，单行显示。下拉选项直接显示用途；选择只改变待写入设置，由用户点击按钮应用。计算方式、兼容说明、刷新原理和命令用法保存在本文档，模块界面只保留操作、当前配置及结果。
+模型选择框的宽度至少容纳最长完整选项名称，模型与挡位之间保留间距。配置路径输入框使用整行可用宽度，并按完整路径测量最小宽度，单行显示。下拉选项直接显示用途；选择只改变待写入设置，点击按钮后应用。计算方式、兼容说明、刷新原理和命令用法见本文档，模块界面提供操作、当前配置及结果。
 
 | 预设 | 提示 |
 |---|---|
@@ -51,9 +53,9 @@
 
 界面显示配置目录中 nvngx_dlss.dll 的文件版本，模块初始化和重新读取时更新；该文件版本不证明驱动覆盖后的实际模型。
 
-## 使用本地构建
+## 安装与使用
 
-1. 构建产物为 `out/DR.DlssModule.dll`。
+1. 从发布页下载 `DR.DlssModule.dll`；自行构建时，产物位于 `out/DR.DlssModule.dll`。
 2. 在 DR 本地模块管理中添加该 DLL 的完整路径并启用。
 3. 打开“DLSS档位调节”或运行 `/pdr dlss`，确认配置路径指向正在使用的游戏目录。
 4. 选择模型和挡位，然后使用“写入并刷新生效”。状态分别显示文件保存结果和窗口刷新结果。
@@ -89,10 +91,10 @@
 
 Build.ps1 使用 PowerShell 7 自带的 Roslyn 编译器；宿主需基于 .NET 10。默认从当前用户的 XIVLauncherCN 安装中找到最高版本 DR、最近的正式 Hooks 目录和 .NET 10 运行时。也可以传入 `-LauncherRoot`、`-PluginDirectory`、`-HookDirectory` 和 `-OutputDirectory`。源码、依赖哈希及输出哈希记录在 `out/build-info.json`。构建只读取依赖元数据，不执行目标插件。
 
-INI 测试只操作临时副本；快照测试使用隔离临时配置。测试不会操作游戏窗口或游戏管道。配置替换前检查已观察到的外部改动；检查与实际替换之间仍存在很短的竞争窗口。
+INI 测试只操作临时副本；快照测试使用隔离临时配置。测试不会操作游戏窗口。配置替换前检查已观察到的外部改动；检查与实际替换之间仍存在很短的竞争窗口。
 
 ## 持续维护
 
-由用户通知上游更新后按需维护，不设置定时任务。源码、构建脚本、行为测试与维护记录保存在专用远程分支；本地 out 保持忽略。交付 DLL 和 SHA256 校验文件作为 GitHub Release 附件发布，每个版本用 `dr-dlss-v<版本>` 标签固定到对应源码提交；未完成游戏验收的版本标记为预发布。
+上游发布影响模块的更新后按需适配。源码、构建脚本、行为测试与维护记录保存在专用分支；构建输出目录 out 不纳入版本控制。DLL 和 SHA256 校验文件作为 GitHub Release 附件发布，每个版本用 `dr-dlss-v<版本>` 标签固定到对应源码提交；未完成游戏验收的版本标记为预发布。
 
 更新来源及影响判断见 [UPSTREAM.md](UPSTREAM.md)。验证状态见 [VALIDATION.md](VALIDATION.md)。来源说明见 [PROVENANCE.md](PROVENANCE.md)。编译、文件写入检查与游戏内验证分开记录。

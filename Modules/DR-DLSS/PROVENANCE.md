@@ -1,6 +1,6 @@
 # 来源、许可与分发范围
 
-模块参考用户提供的 `optscaler/3-源码备份-DR模块和OptiScaler桥接补丁参考/OptiScalerDlssController.cs`。原文件 UI 作者字段为 `DeepSeek`，SHA-256：`D392B8FF90996286576E241226F608FCE9F0AB5FD2673F3536F9FDDE70F035C1`。对应旧 DLL SHA-256：`B668989D9C1BD151C7FF212717368C90333D5C4C3A8E81DD62E5C5C5E2F98733`。
+模块参考 `OptiScalerDlssController.cs`，原文件 UI 作者字段为 `DeepSeek`，SHA-256：`D392B8FF90996286576E241226F608FCE9F0AB5FD2673F3536F9FDDE70F035C1`。对应参考 DLL SHA-256：`B668989D9C1BD151C7FF212717368C90333D5C4C3A8E81DD62E5C5C5E2F98733`。
 
 DR.DlssModule 由 VintageVelvet 维护，提供手动模型与挡位控制、配置持久保存、状态读取和窗口刷新。上述参考材料的原署名记录在此。
 
@@ -10,7 +10,7 @@ DR 公开模块仓库（AGPL-3.0）仅作 API 用法参考。构建依赖来自�
 
 `DlssBridge.cpp` / `.h` 作为通信协议的参考材料，曾用于核对命名管道请求与回执。
 
-参考桥接的只读排查记录：2026-10-03 的探针成功连接到游戏进程所属管道，但 ping 返回 0 字节，未收到确认；当前没有可用 C++ 源文件或日志进一步定位原因。该参考桥接不属于 DR.DlssModule 当前功能。
+桥接参考材料不属于 DR.DlssModule 当前功能或发布附件。
 
 ## 分发范围
 

@@ -14,9 +14,9 @@
 - 社区构建说明：[ReShade Testing Initiative README](https://github.com/CeeJayDK/ReShade-Testing-Initiative#readme)
 - 编译器 SHA-256：`986FFD4ABE4BBDDAA504D2A68044F0B676AEFA958B8BCE8B90B468EB02DC408A`
 - 被验证的 `LandscapeComposition.fx` SHA-256：`E8E69C4C6777A8DA456BC60EFA76E2A39E7C2C1BF15325C863BAF9B9BB03C819`
-- 使用用户现有 AuroraShade 着色器目录中的 `ReShade.fxh`，SHA-256：`2FFFB6009B9593BC43473861E5B189A6FAEE1BD7465913FA8799B85D77DF066F`
+- 使用 AuroraShade 发行包中的 `ReShade.fxh`，SHA-256：`2FFFB6009B9593BC43473861E5B189A6FAEE1BD7465913FA8799B85D77DF066F`
 
-工具处理包含中文的 include 路径时曾异常退出且未给出诊断。将原始 `.fx` 和 `ReShade.fxh` 原样复制到临时 ASCII 路径后正常编译；已核对原文件与待编译副本哈希相同。
+该编译器在包含中文的 include 路径下存在异常退出问题；复现检查时应使用 ASCII 路径，并保持输入文件字节不变。
 
 ## 已完成检查
 
@@ -63,7 +63,7 @@ foreach ($entry in @('E__PostProcessVS', 'E__LandscapeComposition__PS_Compositio
 
 ## 验证边界
 
-上述结果证明 ReShade FX 前端与 DX11 对应的 SM5 后端接受当前源码；GLSL 检查仅覆盖代码生成，未交给实际 OpenGL 驱动编译。未在用户游戏内加载、截图或观察运行时图像，因此线条观感、游戏效果排序、截图流程仍需实际使用确认。超宽分辨率通过编译不代表已经添加独立安全框、裁切或宽屏专属构图设计。
+上述结果证明 ReShade FX 前端与 DX11 对应的 SM5 后端接受当前源码；GLSL 检查仅覆盖代码生成，未交给实际 OpenGL 驱动编译。未完成游戏内加载、截图或运行时图像验证，因此线条观感、游戏效果排序、截图流程仍需实际使用确认。超宽分辨率通过编译不代表已经添加独立安全框、裁切或宽屏专属构图设计。
 
 `enabled_in_screenshot = false` 是 [ReShade 5.2 官方加入的技术注解](https://www.reshade.me/releases/8046-5-2)，并非 AuroraShade 私有扩展。它控制 ReShade 自身截图流程，不能使游戏截图、系统截图或录屏自动隐藏构图线。
 
