@@ -160,7 +160,7 @@ public sealed class OptiScalerDlssController : ModuleBase
 
     private void DrawCurrentConfig()
     {
-        ImGui.TextUnformatted("当前配置");
+        ImGui.TextUnformatted("配置目标");
         if (currentConfig is not { Success: true } state)
         {
             ImGui.TextWrapped(currentConfig == null ? "正在读取……" : $"读取失败：{currentConfig.Error}");
@@ -171,7 +171,7 @@ public sealed class OptiScalerDlssController : ModuleBase
                 : state.Preset.HasValue ? PresetName(state.Preset.Value) : "未设置";
             ImGui.TextWrapped($"配置模型：{preset}");
             var ratio = state.Ratio.HasValue ? state.Ratio.Value.ToString("0.###", CultureInfo.InvariantCulture) + "×" : "未设置或无效";
-            ImGui.TextWrapped($"缩放倍率：{ratio}{(state.RatioOverrideEnabled ? string.Empty : "（覆盖关闭）")}");
+            ImGui.TextWrapped($"配置倍率：{ratio}{(state.RatioOverrideEnabled ? string.Empty : "（覆盖关闭）")}");
             if (state.Upscaler.Length != 0 && !state.Upscaler.Equals("dlss", StringComparison.OrdinalIgnoreCase))
                 ImGui.TextWrapped($"配置升频器：{state.Upscaler}");
         }

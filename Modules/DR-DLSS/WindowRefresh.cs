@@ -13,7 +13,7 @@ namespace DailyRoutines.ModulesPublic;
 /// <summary>所有窗口和游戏配置操作均由框架线程执行。</summary>
 internal sealed class WindowRefresh
 {
-    private enum Stage { Capture, Resize, Borderless, OriginalMode, OriginalGeometry, Finish }
+    private enum Stage { Capture, Resize, Borderless, BorderlessGeometry, OriginalMode, OriginalGeometry, Finish }
 
     private IFramework? framework;
     private Stage stage;
@@ -110,18 +110,31 @@ internal sealed class WindowRefresh
                     EnsureWindow();
                     geometryChanged = true;
                     ShowWindow(window, SW_RESTORE);
-                    SetRect(BuildScaledRect(monitorRect, scale));
-                    if (requestSwapchain) RequestResolution();
+                    var temporaryRect = BuildScaledRect(monitorRect, scale);
+                    SetRect(temporaryRect);
+                    if (requestSwapchain) RequestResolution(temporaryRect.Width, temporaryRect.Height);
                     Status = "已调整临时窗口尺寸";
                     Advance(Stage.Borderless);
                     break;
                 case Stage.Borderless:
                     SetMode(borderlessMode);
                     Status = "已请求无边框模式";
+                    Advance(Stage.BorderlessGeometry);
+                    break;
+                case Stage.BorderlessGeometry:
+                    // Restore the original refresh's explicit full-monitor resolution request
+                    // while still borderless, before restoring the user's original mode.
+                    if (resize)
+                    {
+                        geometryChanged = true;
+                        SetRect(monitorRect);
+                    }
+                    if (requestSwapchain) RequestResolution(monitorRect.Width, monitorRect.Height);
+                    Status = "已请求无边框输出尺寸重建";
                     Advance(Stage.OriginalMode);
                     break;
                 case Stage.OriginalMode:
-                    SetMode(originalMode);
+                    if (originalMode != borderlessMode) SetMode(originalMode);
                     Status = "正在恢复原窗口模式";
                     Advance(Stage.OriginalGeometry);
                     break;
@@ -205,11 +218,16 @@ internal sealed class WindowRefresh
         EnsureWindow();
         if (!GetClientRect(window, out var rect) || !rect.IsValid)
             throw new InvalidOperationException("无法读取窗口客户区尺寸");
+        RequestResolution(rect.Width, rect.Height);
+    }
+
+    private static unsafe void RequestResolution(int width, int height)
+    {
+        if (width <= 0 || height <= 0) throw new InvalidOperationException("输出尺寸无效");
         var device = Device.Instance();
         if (device == null) throw new InvalidOperationException("图形设备尚不可用");
-        // SwapChain 使用客户区像素尺寸，避免把窗口标题栏/边框算进分辨率。
-        device->NewWidth = (uint)rect.Width;
-        device->NewHeight = (uint)rect.Height;
+        device->NewWidth = (uint)width;
+        device->NewHeight = (uint)height;
         device->RequestResolutionChange = 1;
     }
 

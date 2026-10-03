@@ -56,7 +56,7 @@ public static class RuntimeBridge
                 $"set ratio {ratio:F6} preset {preset} save 0");
             await ExchangeAsync(pipeName, expectedProcessId, command, "ok applied", deadline.Token,
                 () => setMayHaveBeenSent = true).ConfigureAwait(false);
-            return new(true, "桥接请求已接受，等待游戏重建 DLSS");
+            return new(true, "桥接更新已提交");
         }
         catch (OperationCanceledException)
         {
