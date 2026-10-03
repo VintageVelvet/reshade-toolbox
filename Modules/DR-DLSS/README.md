@@ -1,14 +1,12 @@
 # DR DLSS 手动模块
 
-维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。当前候选版 `0.1.4.0` 面向 DR `2.2.2.0` / Dalamud API 15。
+维护分支：[`dr-dlss-module`](https://github.com/VintageVelvet/reshade-toolbox/tree/dr-dlss-module/Modules/DR-DLSS)。适配基线为 DR `2.2.2.0` / Dalamud API 15；候选版 `0.1.4.0` 已暂停分发。
 
 这里的“本地模块”指 DR 的模块加载类别：模块通过 DR 的本地模块管理单独加载，尚未收录进 DR 官方模块包，不随 DR 版本一起发布。本模块的源码和 DLL 在本仓库独立维护与交付。
 
-## 下载 DLL
+## 下载状态
 
-[直接下载 DR.DlssModule.dll](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.4.0/DR.DlssModule.dll) · [版本发布页与安装说明](https://github.com/VintageVelvet/reshade-toolbox/releases/tag/dr-dlss-v0.1.4.0) · [SHA256 校验文件](https://github.com/VintageVelvet/reshade-toolbox/releases/download/dr-dlss-v0.1.4.0/SHA256SUMS.txt)
-
-当前版本标记为预发布版，游戏验收进度见 VALIDATION.md。发布页提供可直接使用的 DLL，无需自行编译。
+0.1.4.0 收到“写入并刷新生效”后游戏崩溃的报告，已暂停公开下载。请停用该候选，暂勿继续执行热切换或窗口刷新。崩溃后重启游戏，实际尺寸为 2560×1440 → 2560×1440（1.0），确认配置可在启动时生效；该结果不属于热切换验收。0.1.3.0 也未通过实际 DLAA 热切换验证；当前没有已确认可正常热切换的推荐版本。定位与验证状态见 [VALIDATION.md](VALIDATION.md)。
 
 ## 功能
 
@@ -60,6 +58,8 @@
 当前桥接没有运行尺寸查询接口，模块尚不能读取 OptiScaler 菜单中的实际渲染尺寸。可在角色加载后按 Insert 打开 OptiScaler，查看底部的 `渲染尺寸 → 目标尺寸 [显示尺寸]`；在输出为 2560×1440 时，DLAA 应显示 2560×1440 的渲染输入。若覆盖倍率已为 1.000，但底部仍是 1280×720 → 2560×1440，实际输入仍是 2×，不能认定 DLAA 已生效。
 
 ## 安装与使用
+
+以下是模块操作流程说明。当前候选因崩溃报告暂停分发，热切换和窗口刷新步骤暂勿执行。
 
 1. 先完成 OptiScaler 安装并确认其在游戏中正常加载，准备好下文说明的 `OptiScaler.ini`。
 2. 从发布页下载 `DR.DlssModule.dll`；自行构建时，默认产物为模块源码目录下的 `out/DR.DlssModule.dll`。
