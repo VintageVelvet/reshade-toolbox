@@ -10,8 +10,10 @@ DR 公开模块仓库（AGPL-3.0）仅作 API 用法参考。构建依赖来自�
 
 `DlssBridge.cpp` / `.h` 作为通信协议的参考材料，用于核对命名管道请求、运行时配置更新与后端重建标记；0.1.3.0 恢复模块端的桥接客户端。
 
+已核对的原生桥接构建标识为 `0.7.7-pre9 (20260525_062754)`，DLL SHA-256 为 `B4E6905A3D9D4DC483AC7BFA7D3EA89F0B466BB437A7BBD771127016C075D38E`。这是自定义构建的识别信息，不证明它精确对应官方同名版本标签或某个上游提交。官方 OptiScaler 不保证提供该命名管道接口。
+
 桥接参考源码和原生 OptiScaler 桥接版 DLL 不随 DR.DlssModule 发布附件分发。
 
 ## 分发范围
 
-发布附件为独立本地模块 `DR.DlssModule.dll` 和 `SHA256SUMS.txt`，通过 DR 的本地模块管理加载。DR、OmenTools、Dalamud、OptiScaler、DLSS 及游戏文件由使用环境提供，不随模块附件分发。来源、许可和分发范围统一在本文记录。
+发布附件为独立本地模块 `DR.DlssModule.dll`、`SHA256SUMS.txt` 及构建记录 `build-info.json`，通过 DR 的本地模块管理加载。DR、OmenTools、Dalamud、OptiScaler、DLSS 及游戏文件由使用环境提供，不随模块附件分发。来源、许可和分发范围统一在本文记录。
