@@ -189,11 +189,11 @@ public sealed class OptiScalerDlssController : ModuleBase
             if (state.Upscaler.Length != 0 && !state.Upscaler.Equals("dlss", StringComparison.OrdinalIgnoreCase))
                 ImGui.TextWrapped($"配置升频器：{state.Upscaler}");
         }
-        ImGui.TextUnformatted(outputWidth > 0 && outputHeight > 0
-            ? $"游戏输出分辨率：{outputWidth} × {outputHeight}" : "游戏输出分辨率：暂不可用");
         var input = currentConfig is { Success: true } value && value.Upscaler.Equals("dlss", StringComparison.OrdinalIgnoreCase)
             ? DlssConfigSnapshot.EstimateInput(outputWidth, outputHeight, value.Ratio, value.RatioOverrideEnabled) : null;
-        if (input.HasValue) ImGui.TextUnformatted($"DLSS 输入分辨率：{input.Value.Width} × {input.Value.Height}（按配置计算）");
+        if (input.HasValue) ImGui.TextUnformatted($"渲染分辨率：{input.Value.Width} × {input.Value.Height}");
+        ImGui.TextUnformatted(outputWidth > 0 && outputHeight > 0
+            ? $"输出分辨率：{outputWidth} × {outputHeight}" : "输出分辨率：暂不可用");
         ImGui.TextDisabled($"DLSS：{dlssFileVersion}");
     }
 
