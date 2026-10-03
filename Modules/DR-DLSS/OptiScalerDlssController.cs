@@ -137,8 +137,8 @@ public sealed class OptiScalerDlssController : ModuleBase
         ImGui.Separator();
         DrawCurrentConfig();
         if (writeStatus.Length != 0) ImGui.TextWrapped(writeStatus);
-        if (runtimeStatus.Length != 0) ImGui.TextWrapped(runtimeStatus);
-        if (refresh.Status != "刷新尚未执行") ImGui.TextWrapped(refresh.Status);
+        if (refresh.IsRunning) ImGui.TextWrapped($"OptiScaler：ok applied；{refresh.Status}");
+        else if (runtimeStatus.Length != 0) ImGui.TextWrapped(runtimeStatus);
         ImGui.Spacing();
 
         if (ImGui.CollapsingHeader("配置文件"))
@@ -333,11 +333,15 @@ public sealed class OptiScalerDlssController : ModuleBase
     {
         if (!refresh.Start((uint)config.WindowedModeValue, (uint)config.BorderlessModeValue,
             config.RefreshDelayMs, config.ResizeWindowDuringRefresh, config.RequestSwapchainRefresh, config.WindowedRefreshScale))
+        {
+            runtimeStatus = $"OptiScaler：ok applied；窗口刷新未开始：{refresh.Status}";
             Error(refresh.Status);
+        }
     }
 
     private void OnRefreshCompleted(bool success, string message)
     {
+        runtimeStatus = success ? "OptiScaler：ok applied；窗口刷新已完成" : $"OptiScaler：ok applied；窗口刷新未完成：{message}";
         if (success) NotifyHelper.Instance().NotificationSuccess(message);
         else NotifyHelper.Instance().NotificationError(message);
     }
