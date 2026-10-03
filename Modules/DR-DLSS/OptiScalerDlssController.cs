@@ -136,9 +136,11 @@ public sealed class OptiScalerDlssController : ModuleBase
         ImGui.Spacing();
         ImGui.Separator();
         DrawCurrentConfig();
-        if (writeStatus.Length != 0) ImGui.TextWrapped(writeStatus);
-        if (refresh.IsRunning) ImGui.TextWrapped($"OptiScaler：ok applied；{refresh.Status}");
-        else if (runtimeStatus.Length != 0) ImGui.TextWrapped(runtimeStatus);
+        if (!Busy)
+        {
+            if (writeStatus.Length != 0) ImGui.TextWrapped(writeStatus);
+            if (runtimeStatus.Length != 0) ImGui.TextWrapped(runtimeStatus);
+        }
         ImGui.Spacing();
 
         if (ImGui.CollapsingHeader("配置文件"))
@@ -277,6 +279,7 @@ public sealed class OptiScalerDlssController : ModuleBase
     private void Apply(bool thenRefresh)
     {
         if (Busy) return;
+        runtimeStatus = string.Empty;
         if (config.SelectedQualityProfile < 0 || config.SelectedQualityProfile >= QualityRatios.Length)
         { Error("请先选择一个默认挡位"); return; }
         if (!PresetHelp.IsSelectable(config.SelectedRenderPreset))
@@ -288,10 +291,9 @@ public sealed class OptiScalerDlssController : ModuleBase
             var path = Path.GetFullPath(config.IniPath.Trim().Trim('"'));
             DlssIni.Write(path, config.SelectedRenderPreset, QualityRatios[config.SelectedQualityProfile]);
             writeStatus = "配置已保存";
-            runtimeStatus = string.Empty;
             ReadSettings();
-            NotifyHelper.Instance().NotificationSuccess("DLSS 配置已保存");
             if (thenRefresh) StartRefresh();
+            else NotifyHelper.Instance().NotificationSuccess("DLSS 配置已保存");
         }
         catch (Exception error) { Error($"写入失败：{error.Message}"); }
     }
@@ -299,6 +301,7 @@ public sealed class OptiScalerDlssController : ModuleBase
     private void StartRefresh()
     {
         if (Busy) return;
+        runtimeStatus = string.Empty;
         // Refresh applies the saved file, rather than an unwritten dropdown selection.
         var state = DlssConfigSnapshot.Read(CurrentIniPath);
         if (!state.Success || !state.Upscaler.Equals("dlss", StringComparison.OrdinalIgnoreCase) ||
@@ -325,7 +328,6 @@ public sealed class OptiScalerDlssController : ModuleBase
         bridgeCancellation = new CancellationTokenSource();
         var token = bridgeCancellation.Token;
         var ratio = (float)state.Ratio.Value;
-        runtimeStatus = "正在请求热切换……";
         bridgeTask = Task.Run(() => RuntimeBridge.ApplyAsync(preset, ratio, token));
     }
 
@@ -335,15 +337,15 @@ public sealed class OptiScalerDlssController : ModuleBase
             config.RefreshDelayMs, config.ResizeWindowDuringRefresh, config.RequestSwapchainRefresh, config.WindowedRefreshScale))
         {
             runtimeStatus = $"OptiScaler：ok applied；窗口刷新未开始：{refresh.Status}";
-            Error(refresh.Status);
+            NotifyHelper.Instance().NotificationError(runtimeStatus);
         }
     }
 
     private void OnRefreshCompleted(bool success, string message)
     {
         runtimeStatus = success ? "OptiScaler：ok applied；窗口刷新已完成" : $"OptiScaler：ok applied；窗口刷新未完成：{message}";
-        if (success) NotifyHelper.Instance().NotificationSuccess(message);
-        else NotifyHelper.Instance().NotificationError(message);
+        if (success) NotifyHelper.Instance().NotificationSuccess(runtimeStatus);
+        else NotifyHelper.Instance().NotificationError(runtimeStatus);
     }
 
     private void ReadSettings()
