@@ -4,7 +4,7 @@
 
 ## 配置写入与模型检查
 
-模块自行备份并更新已有 INI，保留原字节备份及无关内容；不要求桥接重新序列化整个文件。替换前检查已观察到的外部改动，但检查与实际替换之间仍存在很短的竞争窗口。
+模块备份 INI 原始字节，再更新相关配置键，保留其他内容。写入由模块完成，桥接负责运行时更新。替换前会检查外部改动；如果其他程序恰好在检查后、替换前写入文件，仍可能发生冲突。
 
 “游戏默认”写入 `RenderPresetOverride=false`、`RenderPresetForAll=0`，将模型请求交还游戏；比例覆盖仍单独保存。[OptiScaler 配置定义](https://github.com/optiscaler/OptiScaler/blob/master/OptiScaler.ini)说明模型覆盖关闭时不强制预设。
 
@@ -27,9 +27,9 @@ set ratio <倍率> preset <模型> save 0
 
 服务端发出回执后立即断开，可能丢弃尚未读取的回复。客户端先挂起异步读取，再发送请求；只读 ping 可以有界重试，set 不重试。set 发送后断开或超时显示“结果未确认”，因为服务端可能已经修改运行时配置。[Windows 断开说明](https://learn.microsoft.com/en-us/windows/win32/api/namedpipeapi/nf-namedpipeapi-disconnectnamedpipe)说明断开时可能丢弃未读取的数据。
 
-完善服务端回执交付及增加关闭覆盖能力，需要桥接版完整 OptiScaler 工程。客户端现有补偿不能替代服务端修复。
+要让服务端发送后等待回执读完，或增加关闭模型覆盖的命令，还需要桥接版的完整 OptiScaler 工程。
 
-界面只在操作结束后显示结果。收到 ok applied 且窗口刷新完成时显示“OptiScaler：ok applied；窗口刷新已完成”，失败保留具体原因；新操作清除旧回执。此状态确认桥接与窗口操作的结果，不测量实际渲染输入。
+界面在操作结束后显示结果。收到 ok applied 且窗口刷新完成时显示“OptiScaler：ok applied；窗口刷新已完成”，失败时显示具体原因；新操作会清除旧回执。实际渲染输入的查看方法见下节。
 
 ## 窗口刷新与资源重建
 
@@ -37,27 +37,27 @@ set ratio <倍率> preset <模型> save 0
 
 刷新临时切换模式与窗口尺寸，在无边框模式稳定后明确请求显示器宽高，再恢复原窗口模式、位置与最大化状态。所有游戏配置和窗口操作在框架更新线程执行，取消或失败时也尝试恢复。窗口最小化、无法读取原状态或参数无效时不开始刷新。
 
-默认参数为窗口模式 1、无边框模式 2、等待 800 毫秒、临时窗口比例 0.95，开启窗口尺寸调整和 SwapChain 请求。等待通过框架回调的时间门控推进，不使用阻塞框架线程的睡眠。
+默认参数为窗口模式 1、无边框模式 2、等待 800 毫秒、临时窗口比例 0.95，开启窗口尺寸调整和 SwapChain 请求。框架回调检查经过的时间，达到等待时长后执行下一步。
 
 临时尺寸和完整显示器尺寸两次请求保留。最终恢复前分别观察窗口矩形、完整 WindowPlacement 和交换链状态；只有对应状态已一致时才跳过该操作。交换链尺寸与客户区一致且没有待处理尺寸请求时，不再请求同尺寸重建。原模式已是无边框时跳过无操作等待，恢复阶段没有实际操作时也省去最后等待。
 
-这些完成条件只证明输出与窗口状态，不能证明 DLSS 输入纹理已经采用新倍率。实际尺寸需在 OptiScaler 菜单核对。
+刷新流程按窗口状态和交换链尺寸判断是否结束。DLSS 输入纹理尺寸由 OptiScaler 菜单显示，确认实际倍率时查看该菜单。
 
 ## 配置快照与尺寸数据
 
 后台每秒读取 INI，输出尺寸在框架更新线程读取 `Device.Instance()->SwapChain->Width/Height`。快照按路径与 generation 筛除过期结果；更换路径、手动读取和写入后的新结果不会被旧任务覆盖，外部文件更新不会覆盖待写入选择，读取失败清除配置显示。
 
-“配置渲染分辨率”按输出尺寸除以配置倍率并取整，仅在配置选择 DLSS 且比例覆盖开启时显示。它是配置目标，不是 DLSS Evaluate 输入纹理的测量。现有桥接没有运行尺寸查询接口。
+“配置渲染分辨率”按输出尺寸除以配置倍率并取整，在配置选择 DLSS 且比例覆盖开启时显示。现有桥接没有运行尺寸查询接口，因此模块用计算值展示配置对应的目标尺寸。
 
-DLSS 版本取自配置目录中的 nvngx_dlss.dll，初始化和重新读取时更新；文件版本不证明驱动覆盖后的实际模型。
+DLSS 版本取自配置目录中的 nvngx_dlss.dll，初始化和重新读取时更新。使用驱动模型覆盖时，实际模型还取决于驱动设置。
 
 ## ReShade 与尺寸重建
 
-窗口尺寸变化会触发 ReShade 运行环境重建。ReShade 6.6.1 的 [ResizeBuffers 流程](https://github.com/crosire/reshade/blob/v6.6.1/source/dxgi/dxgi_swapchain.cpp#L401)重置效果运行环境，[效果销毁流程](https://github.com/crosire/reshade/blob/v6.6.1/source/runtime.cpp#L3634)等待效果编译线程结束；耗时效果加载可能阻塞画面恢复，仅减少模块等待无法消除这部分耗时。
+窗口尺寸变化会触发 ReShade 运行环境重建。ReShade 6.6.1 的 [ResizeBuffers 流程](https://github.com/crosire/reshade/blob/v6.6.1/source/dxgi/dxgi_swapchain.cpp#L401)重置效果运行环境，[效果销毁流程](https://github.com/crosire/reshade/blob/v6.6.1/source/runtime.cpp#L3634)会等待效果编译线程结束。因此，即使缩短模块自身的等待，画面也要等效果加载完成后才能恢复。
 
 “Load only enabled effects”对应 `SkipLoadingDisabledEffects`。[6.6.1 的筛选条件](https://github.com/crosire/reshade/blob/v6.6.1/source/runtime.cpp#L1519)要求预设的 Techniques 列表非空，空预设可能仍加载全部效果。开启此选项可减少未启用效果的加载；挑选新效果时可能需要强制加载全部效果。模块不修改 ReShade 配置或预设。
 
-效果缓存不能省去窗口重建本身。日志中的编译消息也不应一律解读为重新执行完整着色器编译；缓存命中的加载路径可能使用同类消息。具体版本测试结果见 [VALIDATION.md](VALIDATION.md)。
+效果缓存可以减少加载时的编译工作，尺寸变化后仍需重建运行环境。缓存加载与完整着色器编译可能使用同类日志消息，分析耗时时需结合加载路径和时间记录。具体测试结果见 [VALIDATION.md](VALIDATION.md)。
 
 ## 构建与隔离验证
 
@@ -72,4 +72,4 @@ DLSS 版本取自配置目录中的 nvngx_dlss.dll，初始化和重新读取时
 
 Build.ps1 使用 PowerShell 7 自带的 Roslyn 编译器，宿主需基于 .NET 10。默认从当前用户的 XIVLauncherCN 安装中寻找最高版本 DR、最近的正式 Hooks 目录及 .NET 10 运行时；可传入 `-LauncherRoot`、`-PluginDirectory`、`-HookDirectory` 和 `-OutputDirectory`。构建只读取依赖元数据，不执行目标插件；源码、依赖与产物哈希记录在 out/build-info.json。
 
-INI 测试默认生成自含样本，也可用 `-SourceIni` 指定已有 INI，测试仅操作临时副本。快照测试使用隔离配置，桥接测试使用隔离命名管道。这些检查不操作游戏窗口，不能替代游戏内的实际尺寸、窗口恢复及稳定性验证。
+INI 测试默认生成自含样本，也可用 `-SourceIni` 指定已有 INI，测试操作临时副本。快照测试使用隔离配置，桥接测试使用隔离命名管道。游戏内复验另需检查实际尺寸、窗口恢复和稳定性，结果记入 [VALIDATION.md](VALIDATION.md)。
