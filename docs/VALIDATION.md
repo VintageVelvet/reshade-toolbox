@@ -1,24 +1,28 @@
-# 编译验证
+# 着色器编译与源码验证
 
-验证日期：2026-09-27。
+本文按日期记录验证工具、源码哈希、检查结果与覆盖范围。历史记录对应当时的输入文件；后续修改的验证结果见相应日期的条目。
+
+## LandscapeComposition 0.1 — 2026-09-27
 
 2026-09-28 许可补齐：仅在 `.fx` 的 `#include` 前添加许可注释，已与修改前提交比对，`#include` 起的全部实现代码未改变；未重复运行编译。该次许可补齐后的文件 SHA-256 为 `058C031FE719B40A589077BB367DA3D074979B1C1A98725663A32B9443D55395`。下文原始编译输入哈希保留，用于对应当时的验证记录。
 
-## 工具与来源
+### 工具与来源
 
 使用 [ReShade Testing Initiative v6.8.0.5](https://github.com/CeeJayDK/ReShade-Testing-Initiative/releases/tag/v6.8.0.5) 的 Windows x64 `reshadefx_cli.exe`。版本输出为 `ReShade 6.8.0 (ReShade Testing Initiative build)`。
 
-这是社区提供的官方 ReShade FX 编译器源码构建，**不是 ReShade 官方发布的二进制**。该项目将普通 `reshadefx_cli` 标为未修改的官方 `tools/fxc.cpp`；本次未使用带补丁的 `reshadefx_cli_fixed` 编译最终结果，仅用其列出入口名称。DXBC 模式通过 Windows 的 Microsoft D3DCompiler 编译实际顶点、像素着色器。
+该构建使用官方 ReShade FX 编译器源码，二进制由社区项目发布。该项目将普通 `reshadefx_cli` 标为未修改的官方 `tools/fxc.cpp`；记录中的编译结果使用该普通版本，带补丁的 `reshadefx_cli_fixed` 仅用于列出入口名称。DXBC 模式通过 Windows 的 Microsoft D3DCompiler 编译实际顶点、像素着色器。
 
 - 官方源码：[crosire/reshade](https://github.com/crosire/reshade)
 - 社区构建说明：[ReShade Testing Initiative README](https://github.com/CeeJayDK/ReShade-Testing-Initiative#readme)
 - 编译器 SHA-256：`986FFD4ABE4BBDDAA504D2A68044F0B676AEFA958B8BCE8B90B468EB02DC408A`
 - 被验证的 `LandscapeComposition.fx` SHA-256：`E8E69C4C6777A8DA456BC60EFA76E2A39E7C2C1BF15325C863BAF9B9BB03C819`
-- 使用 AuroraShade 发行包中的 `ReShade.fxh`，SHA-256：`2FFFB6009B9593BC43473861E5B189A6FAEE1BD7465913FA8799B85D77DF066F`
+- 验证环境中的 `ReShade.fxh` 来自 AuroraShade 发行包，SHA-256：`2FFFB6009B9593BC43473861E5B189A6FAEE1BD7465913FA8799B85D77DF066F`
 
-该编译器在包含中文的 include 路径下存在异常退出问题；复现检查时应使用 ASCII 路径，并保持输入文件字节不变。
+此记录未提供 AuroraShade 发行包的公开下载链接。复现相同输入需要准备上述哈希对应的 `ReShade.fxh`；使用其他版本时，应另行记录依赖哈希和编译结果。
 
-## 已完成检查
+2026-09-27 验证时，该编译器在包含中文的 include 路径下异常退出。以下复现命令使用 ASCII 路径，并要求复制输入时保持文件字节不变。
+
+### 已完成检查
 
 | 检查 | 分辨率 | 结果 |
 | --- | --- | --- |
@@ -30,9 +34,9 @@
 
 编译时保留运行时 uniform，所有构图分支均参与编译；没有仅使用默认选项进行常量折叠。没有收到编译错误或警告。
 
-## 复现命令
+### 复现命令
 
-下面以临时目录中原样复制的源文件为输入。`-I` 指向含 `ReShade.fxh` 的目录，编译器和临时输入不纳入此仓库。
+下面的路径是复现示例：将编译器、源文件和 `ReShade.fxh` 分别放入对应目录，再从这些目录的上级目录执行。`-I` 指向含 `ReShade.fxh` 的目录；编译器及验证用复制文件不纳入仓库。
 
 ```powershell
 $compiler = '.\work\reshade-validation\reshadefx_cli.exe'
@@ -61,9 +65,9 @@ foreach ($entry in @('E__PostProcessVS', 'E__LandscapeComposition__PS_Compositio
 
 为独立编译器显式提供 `__RENDERER__`，使 include 中的后端条件与被测试后端一致。DXBC 与 SPIR-V 使用具体入口，避免独立工具在未指定入口时不生成实际字节码。
 
-## 验证边界
+### 验证范围
 
-上述结果证明 ReShade FX 前端与 DX11 对应的 SM5 后端接受当前源码；GLSL 检查仅覆盖代码生成，未交给实际 OpenGL 驱动编译。未完成游戏内加载、截图或运行时图像验证，因此线条观感、游戏效果排序、截图流程仍需实际使用确认。超宽分辨率通过编译不代表已经添加独立安全框、裁切或宽屏专属构图设计。
+上述结果覆盖所列输入哈希对应的 ReShade FX 前端与 DX11 SM5 编译。GLSL 检查仅覆盖代码生成，生成结果未交给实际 OpenGL 驱动编译。该记录未包含游戏内加载、运行时图像或截图检查；线条观感、效果排序和截图流程仍需在实际游戏环境中检查。超宽分辨率的检查范围也是编译，独立安全框、裁切与宽屏专属构图设计未在此条目中验证。
 
 `enabled_in_screenshot = false` 是 [ReShade 5.2 官方加入的技术注解](https://www.reshade.me/releases/8046-5-2)，并非 AuroraShade 私有扩展。它控制 ReShade 自身截图流程，不能使游戏截图、系统截图或录屏自动隐藏构图线。
 
@@ -148,3 +152,21 @@ foreach ($entry in @('E__PostProcessVS', 'E__LandscapeComposition__PS_Compositio
 - Shaders/CopyrightAdaptive/CopyrightTex_XIV_AUR.fxh: D5EF7AD0CFD288BBF5192F750FE02449D129A5588B3DF3A4D642B1B9548A36F8
 - Shaders/CopyrightAdaptive/CopyrightTex_XIV.fxh: 030C9398FFD61F58C97B5AC4E4340F6ECDEA47B5C7B55AEA02C882E2D253049F
 - Shaders/CopyrightAdaptive/CopyrightTex_Custom.fxh: 34D4F129BAAA32DFC8D57FAC394D5E075A2C0B67E5BC34B382216CB02907EBE6
+
+## MagicFrame 0.1 — 2026-10-05
+
+- 使用上文同一普通 `reshadefx_cli.exe`（ReShade 6.8.0 Testing Initiative build）和 `ReShade.fxh`；2026-10-05 核对的两者 SHA-256 与工具记录一致。
+- 将最终源码原样复制到 ASCII 临时目录，输入与仓库文件哈希相同。DXBC Shader Model 5.0，显式 `__RENDERER__=0xb000`，未启用 `--spec-constants`，保留运行时 uniform。
+- 2560 × 1440、3840 × 2160、1080 × 1920 各编译 `F__PostProcessVS`、`F__MagicFrame__DrawFrame`、`F__MagicFrame__DrawGuides`，共九个入口全部成功，无错误或警告，均生成非空字节码。
+- 源码 SHA-256：`02021F13C08A157FA773476853E383CA4D1CB80A32D0D561C54DB2C02EC84A2B`。
+- 独立源码审查确认：外画板硬边界优先于前景恢复与两种预览；颜色、线性深度均采样原 UV；深度过渡为 0 时直接比较；原场景与纯色背景按各自区域合成；关闭越框只限制留边，纯色窗口内仍保留近景；选区预览显示候选前景。
+- 辅助线审查发现整数边界上 1 像素线被绘为 2 像素，已将中心线与三等分线改为半开像素区间；修正后确认只选中一行 / 列，并对最终源码重新完成上述编译。轮廓向矩形内部绘制，宽度为 0 时所有辅助线关闭。
+- 默认 9:16 裁切坐标与矩形公式核对：3840 × 2160 对应 `(1312, 0, 1215, 2160)`；2560 × 1440 对应 `(875, 0, 810, 1440)`。
+- 主效果的选区 / 深度预览会进入截图；只有独立 `MagicFrame_Guides` 设置 `enabled_in_screenshot = false`。
+- 该记录覆盖 FX / DXBC 编译与源码检查。游戏内深度是否完整包含人物、头发与透明材质边缘、实际效果顺序和截图排除行为，仍需在具体游戏环境中检查。
+
+## AlbumFrame 画板外默认色 — 2026-10-05
+
+- `OutsideColor` 默认值由 `(0, 0, 0)` 改为 `(0.18, 0.18, 0.18)`，与 MagicFrame 一致；同时更新该控件提示。矩形计算和绘制代码未修改，已有预设中的颜色不自动覆盖。
+- 使用同一普通 ReShade FX 编译器与标准 include，DXBC SM5、`__RENDERER__=0xb000`、保留运行时 uniform；2560 × 1440 的 `F__PostProcessVS`、`F__AlbumFrame__DrawFrame`、`F__AlbumFrame__DrawGuides` 三个入口均退出码 0，无错误或警告，均生成非空字节码。
+- 最终源码与原样复制输入 SHA-256：`F1C76F6B610BA08E234732B0B1FB3CE09CBB73AC3F77B4BA4145ADE2DF4EDBFE`。

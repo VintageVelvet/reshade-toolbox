@@ -23,7 +23,7 @@ set ratio <倍率> preset <模型> save 0
 
 只读探测要求 `ok bridge-ready`，设置请求要求完整的 `ok applied`。桥接收到设置后更新 OptiScaler 内存中的模型、倍率及覆盖开关，并设置 DLSS 后端重建标记；`save 0` 避免桥接重新写入 INI。
 
-现有协议只支持开启模型覆盖，无法关闭覆盖以交还游戏选择。因此游戏默认保存为 `RenderPresetOverride=false`，不发送 preset 0，请求用户重启应用。桥接材料与对应构建的识别信息见 [PROVENANCE.md](PROVENANCE.md)。
+现有协议只支持开启模型覆盖，无法关闭覆盖以交还游戏选择。因此游戏默认保存为 `RenderPresetOverride=false`，不发送 preset 0，需重启游戏应用。桥接材料与对应构建的识别信息见 [PROVENANCE.md](PROVENANCE.md)。
 
 服务端发出回执后立即断开，可能丢弃尚未读取的回复。客户端先挂起异步读取，再发送请求；只读 ping 可以有界重试，set 不重试。set 发送后断开或超时显示“结果未确认”，因为服务端可能已经修改运行时配置。[Windows 断开说明](https://learn.microsoft.com/en-us/windows/win32/api/namedpipeapi/nf-namedpipeapi-disconnectnamedpipe)说明断开时可能丢弃未读取的数据。
 
