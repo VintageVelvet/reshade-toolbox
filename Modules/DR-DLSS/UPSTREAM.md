@@ -1,6 +1,6 @@
 # 更新来源与适配基线
 
-本模块维护配置保存、游戏默认/K/L/M 模型和默认挡位的手动切换、当前状态读取、三个操作按钮、高级刷新参数及快捷命令。
+本文供依赖更新和故障排查使用，列出本模块所用接口、更新来源及适配检查范围。来源与版本基线核对日期为 2026-10-03；后续适配需重新检查目标环境中的实际依赖。
 
 ## 依赖关系
 
@@ -13,7 +13,7 @@
 | 组件 | 主要来源 | 更新后检查内容 |
 |---|---|---|
 | DR 宿主与 Common | [官方清单 main/pluginmaster.json](https://github.com/AtmoOmen/DalamudPlugins/blob/main/pluginmaster.json)、[DR Releases](https://github.com/Dalamud-DailyRoutines/DailyRoutines/releases)、[公开模块源码](https://github.com/Dalamud-DailyRoutines/DailyRoutines.ModulesPublic) | 按 InternalName=DailyRoutines 和当前 DalamudApiLevel 选择渠道；检查实际发布包中的宿主、Common、OmenTools。重点核对 ModuleBase 生命周期、LoadConfig/SaveConfig、ModuleInfo/Permission、Overlay 及本地模块加载方式 |
-| OmenTools 工具库 | [AtmoOmen/OmenTools](https://github.com/AtmoOmen/OmenTools)、[main 提交记录](https://github.com/AtmoOmen/OmenTools/commits/main/) | DService 的服务取得与初始化、CommandManager 的子命令注册/移除、NotifyHelper 的 Notification/Chat 接口。当前没有独立 Release，应跟源码提交，并检查 DR 实际携带的 DLL |
+| OmenTools 工具库 | [AtmoOmen/OmenTools](https://github.com/AtmoOmen/OmenTools)、[main 提交记录](https://github.com/AtmoOmen/OmenTools/commits/main/) | DService 的服务取得与初始化、CommandManager 的子命令注册/移除、NotifyHelper 的 Notification/Chat 接口。核对日期未见独立 Release，可跟踪源码提交，并检查 DR 实际携带的 DLL |
 | 国服 Dalamud | [ottercorp/Dalamud](https://github.com/ottercorp/Dalamud)、[Dalamud API 版本说明](https://dalamud.dev/versions/)、[国服启动器的框架更新实现](https://github.com/ottercorp/FFXIVQuickLauncher/blob/CN/src/XIVLauncher.Common/Dalamud/DalamudUpdater.cs) | API Level、.NET 宿主、IFramework.Update/线程约束、IGameConfig/ScreenMode、CommandInfo 和 Dalamud.Bindings.ImGui。国际服 API 公告用于提前了解迁移变化，国服构建以实际安装的 Hooks 为准 |
 | 国服客户端结构库 | [ottercorp/FFXIVClientStructs](https://github.com/ottercorp/FFXIVClientStructs)、[Dalamud 子模块声明](https://github.com/ottercorp/Dalamud/blob/master/.gitmodules) | Framework/GameWindow/WindowHandle、Device/SwapChain 的尺寸、NewWidth/NewHeight/RequestResolutionChange。国服游戏补丁或框架携带的结构库更新后，重新核对布局与窗口刷新；上层源码参考 [aers/FFXIVClientStructs](https://github.com/aers/FFXIVClientStructs) |
 | OptiScaler | [Releases](https://github.com/optiscaler/OptiScaler/releases)、[配置定义](https://github.com/optiscaler/OptiScaler/blob/master/OptiScaler.ini) | DLSS 选择、模型覆盖开关、RenderPresetForAll、比例覆盖与六个挡位键的含义及默认值；启动时的配置读取与刷新后的重新读取行为 |
@@ -63,6 +63,6 @@ DR 更新后，先比较官方清单、Release、实际安装包和运行环境�
 
 Dalamud 或游戏更新时，补查国服框架和结构库；OptiScaler 或 DLSS 更新时，补查对应配置键和预设支持范围。是否修改本模块，取决于变化是否涉及本模块使用的接口和行为。
 
-相关变化需要检查对应接口、修复并重新构建，运行受影响的文件写入或快照测试。源码与编译检查通过后提供候选 DLL；窗口行为及实际 DLSS 生效由游戏实测确认。验证结果记录在 [VALIDATION.md](VALIDATION.md)。
+相关变化需要检查对应接口、修复并重新构建，运行受影响的文件写入或快照测试。构建与隔离检查通过后，还需在游戏内复验窗口行为及实际 DLSS 输入尺寸。验证结果记录在 [VALIDATION.md](VALIDATION.md)。
 
 维护在 `dr-dlss-module` 分支按需进行。适配提交应记录目标版本、受影响接口和验证结果；版本交付方式见 [README](README.md#持续维护)。

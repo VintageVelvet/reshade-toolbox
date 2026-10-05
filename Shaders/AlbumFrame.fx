@@ -154,9 +154,9 @@ uniform float2 CustomCanvasRatio <
 uniform float3 OutsideColor <
     ui_type = "color";
     ui_label = "画板外颜色";
-    ui_tooltip = "画板之外的遮罩颜色，不影响内部留边。内部使用黑边时可选灰色，方便辨认裁切边界。";
+    ui_tooltip = "画板之外的遮罩颜色，不影响内部留边。默认深灰与魔法取景框一致，方便辨认裁切边界。";
     ui_category = "1. 封面画板";
-> = float3(0.0, 0.0, 0.0);
+> = float3(0.18, 0.18, 0.18);
 
 uniform bool EnableInnerBorder <
     ui_label = "启用内部留边";
