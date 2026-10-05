@@ -14,7 +14,7 @@ CopyrightAdaptive 会在提高截图分辨率时同比放大版权标志。安�
 
 安装脚本读取 `ReShade.ini`，找到已有着色器和纹理目录，生成可用款式列表并安装模块。完成后会显示安装位置；更新已有模块时先备份。
 
-若要同时迁移原 Copyright 预设，在同一命令后加上 `-Preset`：
+若要同时迁移原 Copyright 预设，先在游戏内保存当前参数，再在安装命令后加上 `-Preset`：
 
 ```powershell
 & .\tools\Install-CopyrightAdaptive.ps1 `
