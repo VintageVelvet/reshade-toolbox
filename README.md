@@ -8,6 +8,7 @@ VintageVelvet 维护的 ReShade 着色器、预设与 DR 本地模块仓库。
 |---|---|---|
 | [LandscapeComposition.fx](Shaders/LandscapeComposition.fx) | 横屏构图辅助线 | [横屏构图](docs/LandscapeComposition.md) |
 | [AlbumFrame.fx](Shaders/AlbumFrame.fx) | 专辑封面取景、内部留边与区域构图线 | [专辑取景框](docs/AlbumFrame.md) |
+| [MagicFrame.fx](Shaders/MagicFrame.fx) | 横屏取竖幅、深度穿框与纯色人物背景 | [魔法取景框](docs/MagicFrame.md) |
 
 ## 安装
 
@@ -16,6 +17,8 @@ VintageVelvet 维护的 ReShade 着色器、预设与 DR 本地模块仓库。
 3. 根据对应使用说明启用效果并调整参数，构图辅助和边框通常放在效果顺序末尾。
 
 LandscapeComposition 适合全屏构图。封面画板或内部照片窗口的构图，请使用 AlbumFrame 自带的 AlbumFrame_Guides，并排在 AlbumFrame 遮罩之后。
+
+MagicFrame 默认 9:16 竖版画板，让近景人物越过内部窗口覆盖留边，拍后沿画板裁切。排序为：调色、景深 → MagicFrame → MagicFrame_Guides；使用时关闭 AlbumFrame 和旧 MagicBorder 的遮罩，避免先盖掉人物颜色。
 
 ## DR 模块
 
@@ -27,6 +30,7 @@ LandscapeComposition 适合全屏构图。封面画板或内部照片窗口的�
 - `Presets/`：预设。
 - `Modules/DR-DLSS/`：[模块使用说明](Modules/DR-DLSS/README.md)与[来源记录](Modules/DR-DLSS/PROVENANCE.md)。
 - `docs/`：使用说明、[版本记录](docs/CHANGELOG.md)与[验证记录](docs/VALIDATION.md)。
+- [取景工具扩展需求](docs/FrameToolsRequirements.md)：模板继承与按画板自动裁图的预期行为，规划中，尚未实现。
 
 ## 许可与署名
 
