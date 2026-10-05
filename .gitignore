@@ -5,3 +5,4 @@ ReShadeCache/
 *.zip
 .DS_Store
 Thumbs.db
+Shaders/CopyrightAdaptive/styles-manifest.json

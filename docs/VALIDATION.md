@@ -116,6 +116,43 @@ foreach ($entry in @('E__PostProcessVS', 'E__LandscapeComposition__PS_Compositio
 - 独立源码审查确认 88:107 仅控制比例、留边开关总控所有布局、内外颜色分支独立、拍立得窗口的方形与位置边界约束。
 - 尚未在游戏内验证画面、控件体验及截图。
 
+## CopyrightAdaptive v2 — 2026-10-05
+
+输入来自独立试用版，仓库主 `.fx` 与三个私有头文件按原字节整合。使用前述 ReShade Testing Initiative 普通 `reshadefx_cli`（SHA-256 `986FFD4ABE4BBDDAA504D2A68044F0B676AEFA958B8BCE8B90B468EB02DC408A`），DX11 / Shader Model 5.0。
+
+| 检查 | 范围 | 结果 |
+|---|---|---|
+| 菜单选择预处理与主像素入口 DXBC 编译 | 全部 120 个紧凑菜单项，2560 × 1440 | 120 次退出码 0，生成非空字节码 |
+| Custom 47 主像素入口 DXBC 编译 | 默认画面尺寸、固定 800 × 100，各覆盖 2560 × 1440 和 3840 × 2160 | 4 次退出码 0，生成非空字节码 |
+| 编号、UI、素材和倍率分支检查 | 266 条真实 FX 预处理记录，包含原编号、菜单优先级、移除项、越界与手动 Custom | 全部检查通过；原编号输出与对应已编译菜单输出作规范化比较 |
+| 私有列表与素材 | 菜单数 45 / 63 / 12，保留原款式 ID；缺图 5 项被移除 | 有效菜单素材路径均存在，生成头文件无五个缺失文件名引用 |
+| 同步工具 | Windows PowerShell 5.1，连续相同输入 | 三个头文件及清单 SHA-256 一致，原主文件和三个来源头文件未改变 |
+| 预设迁移工具 | PowerShell 7、Windows PowerShell 5.1，各 10 个组合与拒绝用例 | 全部通过；源文件哈希不变，已有输出及新版段拒绝覆盖 |
+
+编译输入 SHA-256：
+
+| 文件 | SHA-256 |
+|---|---|
+| `Shaders/CopyrightAdaptive.fx` | `79B1193492F640CAE136CAAC46C12E9106AE73F18CBF538E4286991112C5F903` |
+| `Shaders/CopyrightAdaptive/CopyrightTex_XIV_AUR.fxh` | `E9B7FF9C2BE3F25BADE9CFA8A10E84BF663E791D37B58A9881F98D027FD3C97F` |
+| `Shaders/CopyrightAdaptive/CopyrightTex_XIV.fxh` | `E113919E65A057E5D7E8C916A13F1D44AD84368CF252B6A419F97DB2D6E653CF` |
+| `Shaders/CopyrightAdaptive/CopyrightTex_Custom.fxh` | `79D5B2CD5C403696E9BE4ABF1048874F609EC486B06527C572292CC90670741A` |
+
+依赖输入 SHA-256：`ReShade.fxh` 为 `2FFFB6009B9593BC43473861E5B189A6FAEE1BD7465913FA8799B85D77DF066F`，`Blending.fxh` 为 `BD88417D571B5719B8D3091DEB6ED2F19795D5967679C73CEF9156ACDF62B01B`。两者由安装环境提供，未随仓库分发。
+
+素材审计读取原列表的 125 个选项：91 个引用文件名中有 86 个实际 PNG，全部完成签名、完整解码和 RGBA 转换；缺失为四个内置图片及 Custom 默认 `cLayerA.png`。声明绘制尺寸与 PNG 实际尺寸不同的项目保留原规则，未据此修改样式。
+
+新版尚未在游戏内验证。安装后需查看菜单绑定、强制切换 4K 和恢复 2K 后的显示，以及预设重新加载。原始报告含本机路径，仓库保留上述摘要。
+
+### 仓库发布格式
+
+上表记录实际编译输入的哈希。提交时按仓库配置统一为 LF，并清理行尾空白；其余字符、字符串与实现保持一致。发布文件 SHA-256：
+
+- Shaders/CopyrightAdaptive.fx: 54211A986FAEE9B1902301F781CC76C290D5114F68F12B8710D9FFF97637CF30
+- Shaders/CopyrightAdaptive/CopyrightTex_XIV_AUR.fxh: D5EF7AD0CFD288BBF5192F750FE02449D129A5588B3DF3A4D642B1B9548A36F8
+- Shaders/CopyrightAdaptive/CopyrightTex_XIV.fxh: 030C9398FFD61F58C97B5AC4E4340F6ECDEA47B5C7B55AEA02C882E2D253049F
+- Shaders/CopyrightAdaptive/CopyrightTex_Custom.fxh: 34D4F129BAAA32DFC8D57FAC394D5E075A2C0B67E5BC34B382216CB02907EBE6
+
 ## MagicFrame 0.1 — 2026-10-05
 
 - 使用上文同一普通 `reshadefx_cli.exe`（ReShade 6.8.0 Testing Initiative build）和 `ReShade.fxh`；2026-10-05 核对的两者 SHA-256 与工具记录一致。
