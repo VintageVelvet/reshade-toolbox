@@ -1,5 +1,14 @@
 # 版本记录
 
+## 2026-10-05 — CopyrightAdaptive 分辨率适配
+
+- 新增独立版权标志效果 `CopyrightAdaptive`，复用现有安装的 PNG，提供按基准画面高度缩放及固定比例位置。
+- 保留原 Copyright 的位置、缩放、颜色、阴影和混合设置；旧款式编号继续兼容，新菜单使用独立的紧凑序号。
+- 移除参考安装缺图的 AUR 10 / 29 / 47 和 XIV 15 / 16，默认菜单保留 45 / 63 / 12 项。旧预设引用移除项时回退到可用款式。
+- 保留手动 Custom 47；显式图片与固定宽高分别控制素材和各轴的分辨率缩放，避免默认画面尺寸再次放大。
+- 增加 `tools/Convert-CopyrightAdaptivePreset.ps1` 和 `tools/Sync-CopyrightAdaptiveStyles.ps1`，用于另存迁移与按现有素材生成列表。
+- 增加 `docs/CopyrightAdaptive.md`，补充来源、许可与真实编译验证范围；仓库不包含 PNG、依赖头文件或本机诊断清单。
+
 ## 2026-10-03 — DR DLSS 手动模块 0.1.2.0
 
 - 新增 DR 本地模块，适配 DR 2.2.2.0；提供模型/默认挡位、三个手动按钮、高级刷新和快捷命令。
