@@ -9,7 +9,10 @@ param(
 
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
-    [string] $TextureDirectory
+    [string[]] $TextureDirectory,
+
+    # Match ReShade's configured roots: only a trailing /** enables recursion.
+    [switch] $ExactSearchPaths
 )
 
 Set-StrictMode -Version Latest
@@ -33,17 +36,29 @@ $tokenReplacements = [ordered]@{
     'cLayer_SIZE_Y' = 'CopyrightAdaptive_SIZE_Y'
 }
 $sourceDirectoryPath = (Resolve-Path -LiteralPath $SourceShaderDirectory).ProviderPath
-$textureDirectoryPath = (Resolve-Path -LiteralPath $TextureDirectory).ProviderPath
-foreach ($directoryPath in @($sourceDirectoryPath, $textureDirectoryPath)) {
-    if (-not (Test-Path -LiteralPath $directoryPath -PathType Container)) {
-        throw "An input directory does not exist: $directoryPath"
-    }
+if (-not (Test-Path -LiteralPath $sourceDirectoryPath -PathType Container)) {
+    throw "An input directory does not exist: $sourceDirectoryPath"
 }
-$destinationDirectoryPath = [System.IO.Path]::GetFullPath($DestinationDirectory)
+$textureRoots = @(
+    foreach ($textureInput in $TextureDirectory) {
+        $recursive = -not $ExactSearchPaths -or $textureInput -match '[/\\]\*\*$'
+        $rootInput = $textureInput -replace '[/\\]\*\*$', ''
+        $rootPath = (Resolve-Path -LiteralPath $rootInput).ProviderPath
+        if (-not (Test-Path -LiteralPath $rootPath -PathType Container)) {
+            throw "A texture directory does not exist: $rootPath"
+        }
+        [pscustomobject]@{
+            path = $rootPath
+            recursive = [bool] $recursive
+            files = @(Get-ChildItem -LiteralPath $rootPath -File -Recurse:$recursive)
+        }
+    }
+)
+$textureDirectoryPath = $textureRoots[0].path
+$destinationDirectoryPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($DestinationDirectory)
 if ($destinationDirectoryPath.TrimEnd('\', '/') -ieq $sourceDirectoryPath.TrimEnd('\', '/')) {
     throw 'DestinationDirectory must be a private directory distinct from SourceShaderDirectory.'
 }
-$textureFiles = @(Get-ChildItem -LiteralPath $textureDirectoryPath -File -Recurse)
 
 function Find-TexturePaths {
     param([string] $Filename)
@@ -52,14 +67,18 @@ function Find-TexturePaths {
         return
     }
     $relativePath = $Filename.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
-    $rootCandidate = Join-Path $textureDirectoryPath $relativePath
-    if (Test-Path -LiteralPath $rootCandidate -PathType Leaf) { (Resolve-Path -LiteralPath $rootCandidate).ProviderPath }
-    foreach ($textureFile in $textureFiles) {
-        $candidate = $textureFile.FullName
-        if ($candidate -ine $rootCandidate -and
-            ($candidate.EndsWith('\' + $relativePath, [System.StringComparison]::OrdinalIgnoreCase) -or
-             $candidate.EndsWith('/' + $relativePath, [System.StringComparison]::OrdinalIgnoreCase))) {
-            $candidate
+    foreach ($textureRoot in $textureRoots) {
+        $rootCandidate = Join-Path $textureRoot.path $relativePath
+        if (Test-Path -LiteralPath $rootCandidate -PathType Leaf) { (Resolve-Path -LiteralPath $rootCandidate).ProviderPath }
+        if ($textureRoot.recursive) {
+            foreach ($textureFile in $textureRoot.files) {
+                $candidate = $textureFile.FullName
+                if ($candidate -ine $rootCandidate -and
+                    ($candidate.EndsWith('\' + $relativePath, [System.StringComparison]::OrdinalIgnoreCase) -or
+                     $candidate.EndsWith('/' + $relativePath, [System.StringComparison]::OrdinalIgnoreCase))) {
+                    $candidate
+                }
+            }
         }
     }
 }
@@ -412,7 +431,8 @@ $manifest = [ordered]@{
     source_shader_directory = $sourceDirectoryPath
     private_shader_directory = $destinationDirectoryPath
     texture_directory = $textureDirectoryPath
-    texture_check = 'required recursive file existence check'
+    texture_directories = @($textureRoots | ForEach-Object { [ordered]@{ path = $_.path; recursive = $_.recursive } })
+    texture_check = $(if ($ExactSearchPaths) { 'configured roots and recursive suffixes' } else { 'recursive file existence check' })
     legacy_style_id_macro = 'CopyrightAdaptive_Texture_Source'
     compact_menu_macro = 'CopyrightAdaptive_Menu_Source'
     effective_style_id_macro = 'COPYRIGHTADAPTIVE_EFFECTIVE_SOURCE'

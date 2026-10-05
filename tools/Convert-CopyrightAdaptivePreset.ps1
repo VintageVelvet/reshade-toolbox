@@ -157,8 +157,8 @@ function Add-AdaptiveSorting {
     return ($result.ToArray() -join ',')
 }
 
-$sourcePath = [System.IO.Path]::GetFullPath($SourcePreset)
-$destinationPath = [System.IO.Path]::GetFullPath($DestinationPreset)
+$sourcePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SourcePreset)
+$destinationPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($DestinationPreset)
 if ([string]::Equals($sourcePath, $destinationPath, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'SourcePreset and DestinationPreset must be different paths. The source is never overwritten.'
 }
