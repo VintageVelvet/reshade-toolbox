@@ -11,6 +11,8 @@ VintageVelvet 维护的 ReShade 着色器、预设与 DR 本地模块仓库。
 | [CopyrightAdaptive.fx](Shaders/CopyrightAdaptive.fx) | 随分辨率缩放的版权标志，过滤缺图款式 | [版权标志](docs/CopyrightAdaptive.md) |
 | [MagicFrame.fx](Shaders/MagicFrame.fx) | 横屏取竖幅、深度穿框与纯色人物背景 | [魔法取景框](docs/MagicFrame.md) |
 
+截图后的成片尺寸与裁剪坐标见[取景器裁剪简易说明](docs/Cropping.md)，AlbumFrame 与 MagicFrame 共用。按“画板比例”保留整块画板，包含内部留边与穿框人物。
+
 ## 安装
 
 1. 将需要的 `.fx` 文件从 `Shaders/` 复制到 ReShade 的着色器搜索目录。
