@@ -17,7 +17,7 @@ VintageVelvet 维护的 ReShade 着色器、预设与 DR 本地模块仓库。
 2. 确保搜索路径中存在标准 `ReShade.fxh`，然后在游戏内重新加载效果。
 3. 根据对应使用说明启用效果并调整参数，构图辅助和边框通常放在效果顺序末尾。
 
-CopyrightAdaptive 提供安装脚本，读取游戏目录的 ReShade.ini，自动找到着色器和纹理路径，并按已有 PNG 生成可用款式。单条安装命令和可选预设迁移见[使用说明](docs/CopyrightAdaptive.md)。
+CopyrightAdaptive 是独立的版权标志效果，通常在调色完成后放到效果顺序末尾。下载解压后，将 `CopyrightAdaptive.fx` 和 `CopyrightAdaptive/` 文件夹放到原 `Copyright.fx` 所在目录，再在游戏内 Reload、启用并选择款式。新版从相邻文件夹读取已过滤参考缺图项的样式表，PNG 复用现有纹理搜索目录；原 `Copyright.fx` 用于定位目录，新版运行无需开启旧效果。安装和分辨率设置见[使用说明](docs/CopyrightAdaptive.md)。
 
 LandscapeComposition 适合全屏构图。封面画板或内部照片窗口的构图，请使用 AlbumFrame 自带的 AlbumFrame_Guides，并排在 AlbumFrame 遮罩之后。
 
@@ -30,7 +30,7 @@ MagicFrame 默认 9:16 竖版画板，让近景人物越过内部窗口覆盖留
 ## 文档与目录
 
 - `Shaders/`：着色器源码。
-- `tools/`：CopyrightAdaptive 的安装、预设迁移与样式生成工具。
+- `tools/`：CopyrightAdaptive 的安装包生成、可选安装、预设迁移与样式同步工具。
 - `Presets/`：预设。
 - `Modules/DR-DLSS/`：[模块使用说明](Modules/DR-DLSS/README.md)与[来源记录](Modules/DR-DLSS/PROVENANCE.md)。
 - `docs/`：使用说明、[版本记录](docs/CHANGELOG.md)与[验证记录](docs/VALIDATION.md)。

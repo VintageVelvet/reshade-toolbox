@@ -182,3 +182,12 @@ foreach ($entry in @('E__PostProcessVS', 'E__LandscapeComposition__PS_Compositio
 - 默认单纹理目录同步结果仍为 45 / 63 / 12 项；生成的三个私有头文件与前述已编译 v2 输入逐字节相同，本次未修改绘图代码。
 - 维护者的 AuroraShade / ReShade-CN2 安装执行 `-WhatIf -PassThru` 预览，正确找到现有着色器、PNG 和唯一新版模块，输出 `Applied=False`。未执行该目录的安装写入或游戏内操作。
 - 安装脚本的验证输入为 UTF-8 BOM，SHA-256：`889694D7A74A1031AA1F464569960F37EBC7EF4AB593D377D405F5DADDA25C3A`。
+
+## CopyrightAdaptive 复制安装包 — 2026-10-06
+
+- 安装包从已发布提交 `5fcae724ce064f703827d9c6b2b1cc66df1e871b` 读取主 FX、三个私有头文件和许可，共五个文件；包内去掉 `Shaders/` 前缀，顶层直接为 `CopyrightAdaptive.fx` 与 `CopyrightAdaptive/`。
+- Windows PowerShell 5.1 与 PowerShell 7 分别运行打包工具，两份输出均包含且仅包含这五个文件；逐文件 SHA-256 与指定提交的 Git archive 内容一致。主 FX 的三个相对 include 在包中均能找到对应项。
+- 已有输出拒绝覆盖且哈希未改变；无效提交拒绝打包且不生成输出。未提交的本地主 FX 未进入安装包。
+- 只读检查参考 AuroraShade / ReShade-CN2 1207 安装：三个私有头文件各自去重后的字面 PNG 引用为 29 / 57 / 1 项，均在现有纹理目录找到。该安装已提供 `ReShade.fxh`、`Blending.fxh`，且着色器及纹理搜索根均配置递归查找，因此复制到原 `Copyright.fx` 所在目录无需另填搜索路径。
+- 交付 ZIP SHA-256：`FFABF69D0675BDD0F15CC63E9DC7BB32DA3E6AF0A70E5607F3656CACE0C23F9A`。ZIP 容器的压缩字节可能随 PowerShell/.NET 版本不同；重新打包时以包内五个文件与源提交的一致性为准。
+- 本次只调整交付与说明，着色器实现沿用已有版本。上述检查覆盖打包内容、相对头文件和参考素材；本次未执行游戏内安装或画面检查。
