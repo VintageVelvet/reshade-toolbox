@@ -170,3 +170,15 @@ foreach ($entry in @('E__PostProcessVS', 'E__LandscapeComposition__PS_Compositio
 - `OutsideColor` 默认值由 `(0, 0, 0)` 改为 `(0.18, 0.18, 0.18)`，与 MagicFrame 一致；同时更新该控件提示。矩形计算和绘制代码未修改，已有预设中的颜色不自动覆盖。
 - 使用同一普通 ReShade FX 编译器与标准 include，DXBC SM5、`__RENDERER__=0xb000`、保留运行时 uniform；2560 × 1440 的 `F__PostProcessVS`、`F__AlbumFrame__DrawFrame`、`F__AlbumFrame__DrawGuides` 三个入口均退出码 0，无错误或警告，均生成非空字节码。
 - 最终源码与原样复制输入 SHA-256：`F1C76F6B610BA08E234732B0B1FB3CE09CBB73AC3F77B4BA4145ADE2DF4EDBFE`。
+
+## CopyrightAdaptive 安装与相对路径 — 2026-10-05
+
+新增安装入口，迁移与样式同步工具统一使用 PowerShell 当前目录解析相对输入、输出路径。样式同步支持多个纹理根，安装时仅对末尾 `/**` 的搜索范围递归。
+
+- 使用 Windows PowerShell 5.1.26100.9444 与 PowerShell 7.6.5，各完成 11 项实际文件操作检查，全部通过。
+- 输入采用参考安装的三组原头文件、86 个实际 PNG、标准 include 及原预设样本，复制到隔离目录后执行。
+- 检查覆盖：切换 PowerShell 当前目录后的相对迁移、相对同步输出、多个纹理根与 INI 逗号转义、`-WhatIf`、安装并另存迁移、更新备份、已有输出拒绝、非递归目录、缺失来源组、`BasePath` 与带方括号目录、复制失败回滚、多份效果拒绝。其中安装并迁移作为一项检查。
+- 预览、拒绝及复制失败用例核对安装目录文件快照；成功安装核对原 INI、原预设和原始头文件哈希。备份使用 `.bak` 扩展名，递归搜索中仍只有一份可加载的主 FX。
+- 默认单纹理目录同步结果仍为 45 / 63 / 12 项；生成的三个私有头文件与前述已编译 v2 输入逐字节相同，本次未修改绘图代码。
+- 维护者的 AuroraShade / ReShade-CN2 安装执行 `-WhatIf -PassThru` 预览，正确找到现有着色器、PNG 和唯一新版模块，输出 `Applied=False`。未执行该目录的安装写入或游戏内操作。
+- 安装脚本的验证输入为 UTF-8 BOM，SHA-256：`889694D7A74A1031AA1F464569960F37EBC7EF4AB593D377D405F5DADDA25C3A`。
